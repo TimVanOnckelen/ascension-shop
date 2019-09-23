@@ -39,7 +39,6 @@ class FrontendDashboard
         ?>
         <th class="order-total-ex-btw"><?php _e('Totaal ex btw', 'ascension-shop'); ?></th>
         <th class="order-total-inc-btw"><?php _e('Totaal inc btw', 'ascension-shop'); ?></th>
-        <th class="order-customer"><?php _e('Klant', 'ascension-shop'); ?></th>
 
         <?php
     }
@@ -57,7 +56,6 @@ class FrontendDashboard
         ?>
         <td>&euro; <?php echo round($order->get_total() - $order->get_total_tax(), 2); ?></td>
         <td>&euro; <?php echo round($order->get_total(), 2); ?></td>
-        <td><?php echo $user->first_name . " " . $user->last_name; ?></td>
         <?php
     }
 
@@ -69,13 +67,14 @@ class FrontendDashboard
 	public function addExtraTabs($tabs)
 	{
 		wp_enqueue_style("ascension-info-css", XE_ASCENSION_SHOP_PLUGIN_DIR . "/assets/css/refferal-order-info.min.css",null,"1.0.1.1");
+        wp_enqueue_script("partnerAreaFunctions",XE_ASCENSION_SHOP_PLUGIN_DIR . "/assets/js/partnerAreaFunctions.min.js","jquery",'1.0.0');
 
 		unset($tabs["referrals"]);
 	    unset($tabs["lifetime-customers"]);
 
 		$tabs["commission-overview"] = __("Commissies", "ascension-shop");
 		$tabs["clients-overview"] = __("Klanten", "ascension-shop");
-		$tabs["partner-overview"] = __("Partners", "ascension-shop");
+		$tabs["partners"] = __("Partners", "ascension-shop");
 
 		return $tabs;
 	}

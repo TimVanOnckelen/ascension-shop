@@ -13,5 +13,7 @@
     "psr-4": {
       "AscensionShop\\":"src/"
     }
+  },
+  "require": {
   }
 }

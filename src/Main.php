@@ -11,6 +11,7 @@ namespace AscensionShop;
 use AscensionShop\Affiliate\AddClients;
 use AscensionShop\Affiliate\ClientCouponManager;
 use AscensionShop\Affiliate\FrontendDashboard;
+use AscensionShop\Affiliate\FrontendReports;
 use AscensionShop\Affiliate\Mails;
 use AscensionShop\Affiliate\RateLevelsInit;
 use AscensionShop\Affiliate\ReferralManager;
@@ -126,6 +127,8 @@ class Main
         new MyOrders();
 
         new Mails();
+
+        new FrontendReports();
     }
 
 

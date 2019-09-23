@@ -1,3 +1,9 @@
+V1.0.5
+**************
+- [new] clients can be edited in partner area
+- [new] added partner overview
+- [new] added filters & tweaked commissions overview
+
 V1.0.4
 **************
 - [fix] affiliate mails won't be send when amount is zero or lower

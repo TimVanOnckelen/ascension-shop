@@ -30,6 +30,17 @@ class SubAffiliate
         return $this->affiliate_id;
     }
 
+    public function getUserId(){
+	    return affwp_get_affiliate_user_id($this->getId());
+    }
+
+    public function getName(){
+    	return affwp_get_affiliate_name($this->getId());
+    }
+
+    public function getEmail(){
+    	return affwp_get_affiliate_email($this->getId());
+    }
     /**
      * Check if user is a sub aff
      * @return bool
