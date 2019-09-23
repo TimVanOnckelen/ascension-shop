@@ -1,0 +1,17 @@
+{
+  "name": "xeweb/ascension_shop",
+  "description": "Custom shop plugin for Ascension",
+  "minimum-stability": "stable",
+  "license": "proprietary",
+  "authors": [
+    {
+      "name": "Tim Van Onckelen",
+      "email": "tim@xeweb.be"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "AscensionShop\\":"src/"
+    }
+  }
+}

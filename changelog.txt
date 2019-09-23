@@ -1,0 +1,23 @@
+V1.0.4
+**************
+- [fix] affiliate mails won't be send when amount is zero or lower
+- [fix] totals on order page
+- [new] Partners can now filter commissions
+- [new] Clients overview is now inside ascension-shop plugin on partner area
+V1.0.3
+*************
+- [fix] When parent pays, he will get the invoice
+- [new] orders made by parents will not show order details to clients.
+- [new] invoice made unavailable when order is created & payed by partner
+- [new] Mollie "overboeking" mail is redirected to partner when partner pays for client.
+- [fix] Admins can always download invoices
+- [change] Not required anymore to add an adress on creating a client as affiliate
+- [fix] Don't show trackingcode in email when empty
+V1.0.2
+*************
+- [fix] Checkout send to other adres only updates when checkbox is checked
+
+V1.0.1
+*************
+- [new] added "overboeking" when customers pays
+- [fix] checkout switching for affiliates has been optimized for better prices representation

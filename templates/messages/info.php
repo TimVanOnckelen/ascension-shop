@@ -1,0 +1,1 @@
+<div class="wp_supporter_message_box"><b><?php echo $message; ?></b></div>
