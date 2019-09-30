@@ -7,15 +7,15 @@ $customers    = affiliate_wp_lifetime_commissions()->integrations->get_customers
 ?>
 
     <div id="affwp-affiliate-dashboard-lifetime-customers" class="affwp-tab-content">
-		<?php  if(!isset($_GET["ascension-download-report"])){ ?>
             <h4><?php _e( 'Klanten', 'ascension-shop' ); ?></h4>
             <p>
                 <input type="text" id="searchClient" onkeyup="searchClientTable()" placeholder="<?php _e("Zoek op naam, telefoon, adres of email","ascension-shop"); ?>">
             </p>
+            <p><a href="<?php echo $_SERVER['REQUEST_URI'].'&generateReport=clients';?>"><button><?php _e("Download als XLS","ascension-shop"); ?></button></a></p>
             <p>
                 <a href="#addClient"><?php _e("Nieuwe klant aanmaken"); ?></a>
             </p>
-		<?php } ?>
+
 		<?php if ( $customers ) : ?>
 
             <table id="clients-overview" class="affwp-table affwp-table-responsive">
@@ -46,6 +46,8 @@ $customers    = affiliate_wp_lifetime_commissions()->integrations->get_customers
                                 <br />
 								<?php echo get_user_meta( $customer->user_id, 'billing_phone', true ); ?><br />
 								<?php echo $customer->email; ?><br />
+	                            <?php echo get_user_meta( $customer->user_id, 'vat_number', true ); ?><br />
+
                             </div>
 							<?php
 
@@ -63,7 +65,7 @@ $customers    = affiliate_wp_lifetime_commissions()->integrations->get_customers
 
                         <td class="customer-discount" width="20%">
                             <form method="POST" action="<?php echo admin_url('admin-post.php'); ?>">
-                                <input type="number" name="customer_rate[<?php echo $customer->user_id; ?>]" value="<?php echo get_user_meta($customer->user_id,"ascension_shop_affiliate_coupon",true); ?>">
+                                <input type="number" name="customer_rate[<?php echo $customer->user_id; ?>]" step=".01" value="<?php echo get_user_meta($customer->user_id,"ascension_shop_affiliate_coupon",true); ?>">
 								<?php wp_nonce_field( 'ascension_save_customer_discount_'.$affiliate_id ); ?>
                                 <input type="hidden" name="action" value="ascension-save_customer-discount">
                                 <input type="submit" value="<?php _e("Opslaan","ascension-shop"); ?>" />
@@ -77,7 +79,7 @@ $customers    = affiliate_wp_lifetime_commissions()->integrations->get_customers
 			<?php endforeach; ?>
             </tbody>
             </table><?php else : ?>
-            <p><?php _e( 'You don\'t have any lifetime customers yet.', 'ascension-shop' ); ?></p>
+            <p><?php _e( 'You don\'t have any customers yet.', 'ascension-shop' ); ?></p>
 		<?php endif; ?>
 
 		<?php  if(!isset($_GET["ascension-download-report"])){ ?>

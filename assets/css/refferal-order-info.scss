@@ -28,3 +28,46 @@
     margin:10px;
   }
 }
+
+.ascension-report-overview {
+  position: relative;
+  margin-bottom: 10px;
+  .info {
+    display: inline-block;
+    padding: 10px;
+    border: 1px solid #fff;
+    background-color: #fefefe;
+    margin:10px;
+  }
+  .totals {
+    display: flex;
+    margin-bottom: 10px;
+    div {
+      padding: 10px;
+      border: 1px solid #fff;
+      background-color: #fefefe;
+      margin:10px;
+    }
+  }
+  .blocks {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+  }
+}
+iframe[name="printIframe"]{
+  display: none;
+}
+@media print {
+  body {
+    -webkit-print-color-adjust: exact !important;
+  }
+  .whb-sticky-shadow.whb-sticked .whb-row:last-child,.page-title-default,#affwp-affiliate-dashboard #affwp-affiliate-dashboard-tabs,#ascension-filters{
+    display: none;
+  }
+  .ascension-report-overview {
+    .blocks {
+      display: none;
+    }
+  }
+}

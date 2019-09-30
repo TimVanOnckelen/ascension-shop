@@ -66,8 +66,12 @@ class FrontendDashboard
 	 */
 	public function addExtraTabs($tabs)
 	{
-		wp_enqueue_style("ascension-info-css", XE_ASCENSION_SHOP_PLUGIN_DIR . "/assets/css/refferal-order-info.min.css",null,"1.0.1.1");
-        wp_enqueue_script("partnerAreaFunctions",XE_ASCENSION_SHOP_PLUGIN_DIR . "/assets/js/partnerAreaFunctions.min.js","jquery",'1.0.0');
+		wp_enqueue_style("ascension-info-css", XE_ASCENSION_SHOP_PLUGIN_DIR . "/assets/css/refferal-order-info.min.css",null,"1.0.1.7");
+		wp_enqueue_script("html2canvas","https://html2canvas.hertzen.com/dist/html2canvas.min.js","jquery",'1.0.0');
+		wp_enqueue_script("printThis",XE_ASCENSION_SHOP_PLUGIN_DIR . "/assets/js/printThis-master/printThis.min.js");
+
+		wp_enqueue_script("partnerAreaFunctions",XE_ASCENSION_SHOP_PLUGIN_DIR . "/assets/js/partnerAreaFunctions.min.js",array("jquery","html2canvas"),'1.0.14');
+
 
 		unset($tabs["referrals"]);
 	    unset($tabs["lifetime-customers"]);

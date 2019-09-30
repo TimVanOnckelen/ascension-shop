@@ -425,7 +425,7 @@ class ReferralManager
         $data['description'] = $this->get_referral_description($level_count, $direct_affiliate);
         // $referral_amount, $affiliate_id, $amount, $reference, $product_id, $context
         $data['amount'] = $waterfall_amounts;
-        $data['custom'] = 'indirect'; // Add referral type as custom referral data
+        $data['custom'] = array("type"=> "indirect","parent" => $affiliate_id); // Add referral type as custom referral data
         $data['context'] = 'woocommerce';
 
         unset($data['date']);

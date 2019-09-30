@@ -15,5 +15,7 @@
     }
   },
   "require": {
+    "phpoffice/phpspreadsheet": "1.9.0",
+    "dompdf/dompdf": "v0.8.3"
   }
 }

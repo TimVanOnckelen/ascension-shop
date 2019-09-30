@@ -11,7 +11,6 @@ namespace AscensionShop;
 use AscensionShop\Affiliate\AddClients;
 use AscensionShop\Affiliate\ClientCouponManager;
 use AscensionShop\Affiliate\FrontendDashboard;
-use AscensionShop\Affiliate\FrontendReports;
 use AscensionShop\Affiliate\Mails;
 use AscensionShop\Affiliate\RateLevelsInit;
 use AscensionShop\Affiliate\ReferralManager;
@@ -21,6 +20,9 @@ use AscensionShop\Affiliate\VisitManager;
 use AscensionShop\Affiliate\Waterfall;
 use AscensionShop\Affiliate\WoocommerceCheckOut;
 use AscensionShop\Lib\MessageHandeling;
+use AscensionShop\Reports\AffiliateReports;
+use AscensionShop\Reports\BackendReports;
+use AscensionShop\Reports\FrontendReports;
 use AscensionShop\Shipping\Console;
 use AscensionShop\Shipping\ConsoleApi;
 use AscensionShop\Shipping\WC_Custom_Email;
@@ -72,6 +74,9 @@ class Main
         new CustomerImporter();
         //new DiscountImporter();
 
+	    new AffiliateReports();
+
+	    new BackendReports();
     }
 
     /**
@@ -128,7 +133,9 @@ class Main
 
         new Mails();
 
+        // Get a report
         new FrontendReports();
+
     }
 
 

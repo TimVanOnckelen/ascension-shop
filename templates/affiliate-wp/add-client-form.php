@@ -15,6 +15,8 @@
 	<input type="text" name="postalcode" id="postalcode" />
 	<label for="phone"><?php _e("Telefoon","ascension-shop"); ?></label>
 	<input type="text" name="phone" id="phone" />
+    <label for="vat"><?php _e("BTW nummer","ascension-shop"); ?></label>
+    <input type="text" name="vat" id="vat" />
 	<label for="discount"><?php _e("Korting (%)","ascension-shop"); ?></label>
 	<input type="number" name="discount" id="discount" min="0" max="100" required/>
 	<?php wp_nonce_field( 'ascension_add_new_customer_'.$this->affiliate_id ); ?>

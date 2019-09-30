@@ -14,6 +14,8 @@
 	<input type="text" name="postalcode" id="postalcode" value="<?php echo get_user_meta( $this->customer->user_id, 'billing_postcode', true ); ?>" />
 	<label for="phone"><?php _e("Telefoon","ascension-shop"); ?></label>
 	<input type="text" name="phone" id="phone" value="<?php echo get_user_meta( $this->customer->user_id, 'billing_phone', true ); ?>" />
+    <label for="vat"><?php _e("BTW nummer","ascension-shop"); ?></label>
+    <input type="text" name="vat" id="vat"  value="<?php echo get_user_meta( $this->customer->user_id, 'vat_number', true ); ?>"  />
 	<?php wp_nonce_field( 'ascension_edit_customer'.$this->affiliate_id ); ?>
     <input type="hidden" name="user_id" value="<?php echo $this->customer->user_id; ?>"/>
     <input type="hidden" name="customer_id" value="<?php echo $this->customer->customer_id; ?>"/>

@@ -3,15 +3,17 @@
     <properties>
       <sourceFilesUrls>
         <item url="file://$PROJECT_DIR$/assets/js/ascension-affiliate-checkout.min.js" />
-        <item url="file://$PROJECT_DIR$/assets/js/downloadReports.min.js" />
+        <item url="file://$PROJECT_DIR$/assets/js/html2canvas.min.js" />
         <item url="file://$PROJECT_DIR$/assets/js/partnerAreaFunctions.min.js" />
+        <item url="file://$PROJECT_DIR$/assets/js/printThis-master/printThis.min.js" />
         <item url="file://$PROJECT_DIR$/assets/js/unserialize.min.js" />
       </sourceFilesUrls>
     </properties>
     <CLASSES>
       <root url="file://$PROJECT_DIR$/assets/js/ascension-affiliate-checkout.min.js" />
-      <root url="file://$PROJECT_DIR$/assets/js/downloadReports.min.js" />
+      <root url="file://$PROJECT_DIR$/assets/js/html2canvas.min.js" />
       <root url="file://$PROJECT_DIR$/assets/js/partnerAreaFunctions.min.js" />
+      <root url="file://$PROJECT_DIR$/assets/js/printThis-master/printThis.min.js" />
       <root url="file://$PROJECT_DIR$/assets/js/unserialize.min.js" />
     </CLASSES>
     <SOURCES />

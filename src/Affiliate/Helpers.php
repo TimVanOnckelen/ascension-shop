@@ -100,6 +100,7 @@ class Helpers
     static public function getAllChilderen($parent_id)
     {
 
+
         global $wpdb;
         $table_name = $wpdb->prefix . 'affiliate_wp_affiliatemeta';
         $children = $wpdb->get_results("SELECT affiliate_id FROM {$table_name} WHERE meta_key = 'ascension_parent_id' AND meta_value='{$parent_id}'", OBJECT);
@@ -202,5 +203,100 @@ class Helpers
 
     }
 
+    static function getTotalsFromRefs($refs){
+    	$totals = array();
+    	$totals["total"] = 0;
+    	$totals["pending"] = 0;
+    	$totals["unpaid"] = 0;
+    	$totals["paid"] = 0;
+
+    	foreach($refs as $ref){
+    		$totals["total"] += $ref->amount;
+
+    		if($ref->status == 'unpaid'){
+    			$totals["unpaid"] += $ref->amount;
+		    }
+		    if($ref->status == 'pending'){
+			    $totals["pending"] += $ref->amount;
+		    }
+		    if($ref->status == 'paid'){
+			    $totals["paid"] += $ref->amount;
+		    }
+	    }
+
+    	return $totals;
+    }
+
+    static function getParentFromRef($referral){
+
+    	$parent = '';
+
+	    if(isset($referral->custom["parent"])) {
+		    $parent = affiliate_wp()->affiliates->get_affiliate_name( $referral->custom["parent"] );
+	    }elseif(strpos($referral->description, 'Indirect') !== false){
+		    // Legacy support for orders before v1.0.5
+		    $temp_parent = str_replace('Indirect Referral FROM','',$referral->description);
+		    $temp_parent = explode("|",$temp_parent);
+		    $parent = $temp_parent[0];
+	    }
+
+	    return $parent;
+    }
+
+    static function getPercentageTable($sub,$order,$referral){
+	    /**
+	     * Get the rates
+	     */
+	    $user_rate = $sub->getUserRate();
+	    $min = '';
+	    $return_rate = $user_rate;
+	    $total = $order->get_subtotal();
+	    $amount = round( $referral->amount, 2 );
+	    $amount_check = round( $user_rate * ( $total / 100 ), 2 );
+
+	    /**
+	     * Check if there is a new rate
+	     */
+	    if ( $amount_check != $amount ) {
+		    $min            = $amount_check - $amount;
+		    $min_percentage = round( 100 * ( $min / $total ), 2 );
+		    if ( $min_percentage > $user_rate ) {
+			    $min_percentage = $user_rate;
+		    }
+		    $min      = ' - ' . $min_percentage . '%';
+		    $new_rate = $user_rate - $min_percentage;
+		    $min      .= ' = ' . $new_rate . '%';
+	    }
+
+	    return  $user_rate . '%' . $min;
+    }
+
+	/**
+	 * Make payout array per affiliate
+	 * @param $referrals
+	 *
+	 * @return array
+	 */
+    static function countPerRef($referrals){
+
+    	$new_array = array();
+
+    	foreach ($referrals as $ref){
+    		if(isset($new_array[$ref->affiliate_id])) {
+			    $new_array[ $ref->affiliate_id ]["amount"] += $ref->amount;
+			    $new_array[$ref->affiliate_id]["refs"] += 1;
+		    }else{
+			    $new_array[ $ref->affiliate_id ]["amount"] = $ref->amount;
+			    $new_array[ $ref->affiliate_id ]["affiliate_id"] = $ref->affiliate_id;
+			    $new_array[$ref->affiliate_id]["name"] = affiliate_wp()->affiliates->get_affiliate_name($ref->affiliate_id);
+			    $new_array[$ref->affiliate_id]["email"] = affwp_get_affiliate_email($ref->affiliate_id);
+			    $new_array[$ref->affiliate_id]["refs"] = 1;
+
+		    }
+	    }
+
+    	return $new_array;
+
+    }
 
 }

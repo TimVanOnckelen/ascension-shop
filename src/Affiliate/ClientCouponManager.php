@@ -20,6 +20,12 @@ class ClientCouponManager
 
         add_action('admin_post_ascension-save_customer-discount', array($this, "saveDiscounts"), 10, 1);
         add_filter('woocommerce_cart_totals_get_fees_from_cart_taxes', array($this, "filterOutTax"), 10, 3);
+
+	    // Edit client discount in backend
+	    add_action('show_user_profile', array($this, 'editClientDiscount'),10,1);
+	    add_action('edit_user_profile', array($this, 'editClientDiscount'),10,1);
+
+	    add_action('edit_user_profile_update', array($this, "saveClientDiscount"),10,1);
     }
 
 
@@ -154,4 +160,35 @@ class ClientCouponManager
 
         return false;
     }
+
+    public function editClientDiscount($user){
+	    // Only show if current user can edit
+	    if (!current_user_can('edit_user', $user->ID)) return;
+
+	    if (!is_admin()) return;
+
+
+	    ?>
+		<h2><?php _e("Klant instellingen - Partners"); ?></h2>
+	    <table class="form-table">
+		    <tr>
+			    <th><label for="as_user_ln"><?php _e("Klanten korting (%)") ?></label></th>
+			    <td>
+				    <input type="number" name="ascension_shop_affiliate_coupon" step=".01" value="<?php echo get_user_meta($user->ID,"ascension_shop_affiliate_coupon",true); ?>">
+			    </td>
+		    </tr>
+
+	    </table>
+	    <?php
+    }
+
+	/**
+	 * @param $user_id
+	 */
+	public function saveClientDiscount($user_id)
+	{
+		$return = update_user_meta($user_id, 'ascension_shop_affiliate_coupon', $_POST['ascension_shop_affiliate_coupon']);
+		return $return;
+	}
+
 }
