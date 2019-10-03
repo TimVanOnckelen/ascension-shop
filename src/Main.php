@@ -20,6 +20,8 @@ use AscensionShop\Affiliate\VisitManager;
 use AscensionShop\Affiliate\Waterfall;
 use AscensionShop\Affiliate\WoocommerceCheckOut;
 use AscensionShop\Lib\MessageHandeling;
+use AscensionShop\NationalManager\Frontend;
+use AscensionShop\NationalManager\NationalManager;
 use AscensionShop\Reports\AffiliateReports;
 use AscensionShop\Reports\BackendReports;
 use AscensionShop\Reports\FrontendReports;
@@ -64,6 +66,8 @@ class Main
     public function loadBackend()
     {
 
+	    new BackendReports();
+
         // Console
         new Console();
 
@@ -76,7 +80,6 @@ class Main
 
 	    new AffiliateReports();
 
-	    new BackendReports();
     }
 
     /**
@@ -84,6 +87,8 @@ class Main
      */
     public function globalHooks()
     {
+
+    	new NationalManager();
 
         new MessageHandeling();
 
@@ -136,6 +141,10 @@ class Main
         // Get a report
         new FrontendReports();
 
+	    /**
+	     * National Manager Frontend
+	     */
+        // new Frontend();
     }
 
 

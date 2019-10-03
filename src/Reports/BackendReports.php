@@ -17,17 +17,32 @@ class BackendReports {
 		add_action( 'admin_menu', array($this, 'web_settings_init') );
 		add_action( 'admin_post_export_sales', array($this, 'export_sales') );
 		add_action( 'admin_post_export_orders', array($this, 'export_orders') );
+		add_action( 'admin_post_export_credit_note_affiliates',array($this,'export_credit_note'));
 	}
 
 	public function web_settings_init() {
+
+		add_menu_page(
+			__('Rapporten','ascension-shop'),
+			__('Rapporten','ascension-shop'),
+			'manage_options',
+			'ascension_reports',
+		array($this,"ascension_reports"),
+		'
+dashicons-format-status');
+
 		add_submenu_page(
-			'woocommerce',
+			'ascension_reports',
 			__( 'Sales reports'),
 			__( 'Sales reports'),
 			'manage_options',
 			'sales-export-page',
 			array($this, 'web_settings_page')
 		);
+	}
+
+	public function ascension_reports(){
+		echo "Please use the sub menu to view reports.";
 	}
 
 	public function web_settings_page(){
@@ -313,6 +328,12 @@ class BackendReports {
 		$writer = IOFactory::createWriter($spreadsheet, 'Xlsx');
 		$writer->save('php://output');
 
+	}
+
+	public function export_credit_note(){
+		$creditNote = new CreditNote($_POST["start-date"],$_POST["end-date"],$_POST["affiliate"]);
+		$creditNote->generateCreditNote();
+		exit;
 	}
 
 }

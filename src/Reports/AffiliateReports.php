@@ -21,11 +21,11 @@ class AffiliateReports {
 
 	public function web_settings_init() {
 		add_submenu_page(
-			'affiliate-wp',
-			__( 'Affiliate reports'),
-			__( 'Affiliate reports'),
+			'ascension_reports',
+			__( 'Partner reports'),
+			__( 'Partner reports'),
 			'manage_options',
-			'Affiliate-export-page',
+			'partner-export-page',
 			array($this, 'web_settings_page')
 		);
 	}

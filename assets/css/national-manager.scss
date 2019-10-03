@@ -1,0 +1,39 @@
+
+.pc-tab > input,
+.pc-tab section > div {
+  display: none;
+}
+
+.pc-tab section > div {
+  p {
+    padding: 10px;
+  }
+}
+
+#tab1:checked ~ section .tab1,
+#tab2:checked ~ section .tab2,
+#tab3:checked ~ section .tab3 {
+  display: block;
+}
+
+#tab1:checked ~ nav .tab1,
+#tab2:checked ~ nav .tab2,
+#tab3:checked ~ nav .tab3 {
+  color: red;
+}
+
+ul.ascension-sub-menu {
+  margin: 0;
+  margin-bottom: 10px;
+  padding: 0;
+  border-bottom: 1px solid #c0c0c0;
+  li {
+    list-style: none;
+    display: inline-block;
+    margin: 10px;
+    padding: 10px;
+  }
+}
+.dataTables_wrapper .dataTables_filter {
+  margin-right: 51px;
+}

@@ -1,3 +1,13 @@
+v1.0.6
+**************
+- [fix] Inactive partners cannot get any discount.
+- [new] added reports & credit nota for sales & Affiliate
+- [new] add frontend National manger area
+- [new] national managers can view all orders on the frontend
+- [new] partner reports on backend have a better overview
+- [new] the partner to who a customer belongs can now be changed in the backend.
+- [temp] national manager area disabled in this version because not stable yet.
+
 V1.0.5
 **************
 - [new] clients can be edited in partner area

@@ -81,9 +81,16 @@ class WoocommerceCheckOut
 
         $aff_id = affwp_get_affiliate_id();
 
+
         // Show the clients logo
         if ($aff_id > 0) {
-            $t = new TemplateEngine();
+	        $sub = new SubAffiliate($aff_id);
+
+	        if($sub->getStatus() == "0"){
+	        	return;
+	        }
+
+	        $t = new TemplateEngine();
             $customers = affiliate_wp_lifetime_commissions()->integrations->get_customers_for_affiliate($aff_id);
             usort($customers, function ($first, $second) {
                 return strcasecmp($first->first_name, $second->first_name);

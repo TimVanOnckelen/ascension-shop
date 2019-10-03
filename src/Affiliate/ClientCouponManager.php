@@ -26,6 +26,8 @@ class ClientCouponManager
 	    add_action('edit_user_profile', array($this, 'editClientDiscount'),10,1);
 
 	    add_action('edit_user_profile_update', array($this, "saveClientDiscount"),10,1);
+	    add_action('edit_user_profile_update', array($this, "saveClientPartner"),10,1);
+
     }
 
 
@@ -47,6 +49,10 @@ class ClientCouponManager
 
             $sub = new SubAffiliate($aff_id);
             $rate = $sub->getUserRate();
+
+            if($sub->getStatus() == 0){
+                return;
+            }
 
             if ($rate > 0) {
 
@@ -167,6 +173,15 @@ class ClientCouponManager
 
 	    if (!is_admin()) return;
 
+	    $customer_id = $this->getCustomerByUserId($user->ID);
+
+	    if($customer_id > 0){
+	        $parent_id = $this->getParentByCustomerId($customer_id);
+        }
+
+	    $all_affiliates = affiliate_wp()->affiliates->get_affiliates(array('number' => 0,'orderby'=>'name','order'=>'ASC'));
+
+
 
 	    ?>
 		<h2><?php _e("Klant instellingen - Partners"); ?></h2>
@@ -177,7 +192,24 @@ class ClientCouponManager
 				    <input type="number" name="ascension_shop_affiliate_coupon" step=".01" value="<?php echo get_user_meta($user->ID,"ascension_shop_affiliate_coupon",true); ?>">
 			    </td>
 		    </tr>
+            <tr>
+                <th><label for="as_user_ln"><?php _e("Klant van"); ?></label></th>
+                <td>
+                    <input type="hidden" name="customer_id" value="<?php echo $customer_id; ?>" />
+                    <select name="ascension_shop_customer_of">
+                        <option></option>
+                        <?php
+                        foreach ($all_affiliates as $a) {
 
+	                       ?>
+                            <option value="<?php echo $a->affiliate_id; ?>" <?php selected($a->affiliate_id,$parent_id); ?>><?php echo affiliate_wp()->affiliates->get_affiliate_name($a->affiliate_id) ?></option>
+                            <?php
+
+                        }
+                        ?>
+                    </select>
+                </td>
+            </tr>
 	    </table>
 	    <?php
     }
@@ -188,7 +220,63 @@ class ClientCouponManager
 	public function saveClientDiscount($user_id)
 	{
 		$return = update_user_meta($user_id, 'ascension_shop_affiliate_coupon', $_POST['ascension_shop_affiliate_coupon']);
+
+
 		return $return;
+	}
+
+	public function saveClientPartner($user_id){
+
+		if(isset($_REQUEST["ascension_shop_customer_of"])){
+
+
+			$customer_id = $this->getCustomerByUserId($user_id);
+
+
+			if($customer_id > 0) {
+
+			    $partner_id = absint($_REQUEST["ascension_shop_customer_of"]);
+
+				global $wpdb;
+				$query = $wpdb->query("UPDATE {$wpdb->prefix}affiliate_wp_customermeta SET meta_value='".$partner_id."' WHERE affwp_customer_id='" . $customer_id . "' AND meta_key='affiliate_id'");
+
+
+			}else{
+				$customer = affwp_add_customer(array(
+					'first_name' => $_REQUEST["first_name"],
+					'last_name' => $_REQUEST["last_name"],
+					'email' => $_REQUEST["email"],
+					'user_id' => $user_id,
+					'affiliate_id' => $_REQUEST["ascension_shop_customer_of"],
+					'date_created' => date()
+				));
+            }
+		}
+
+
+    }
+
+	private function getCustomerByUserId($user_id)
+	{
+
+		global $wpdb;
+		$query = $wpdb->get_row("SELECT customer_id FROM {$wpdb->prefix}affiliate_wp_customers WHERE user_id='" . $user_id . "'");
+
+		if (isset($query->customer_id)) {
+			return $query->customer_id;
+		}
+		return 0;
+	}
+
+	private function getParentByCustomerId($customer_id)
+	{
+		global $wpdb;
+		$query = $wpdb->get_row("SELECT meta_value FROM {$wpdb->prefix}affiliate_wp_customermeta WHERE affwp_customer_id='" . $customer_id . "' AND meta_key='affiliate_id'");
+
+		if (isset($query->meta_value)) {
+			return $query->meta_value;
+		}
+		return 0;
 	}
 
 }
