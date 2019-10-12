@@ -37,8 +37,8 @@ class FrontendDashboard
     public function totalAmount()
     {
         ?>
-        <th class="order-total-ex-btw"><?php _e('Totaal ex btw', 'ascension-shop'); ?></th>
         <th class="order-total-inc-btw"><?php _e('Totaal inc btw', 'ascension-shop'); ?></th>
+        <th class="order-total-ex-btw"><?php _e('Totaal ex btw', 'ascension-shop'); ?></th>
 
         <?php
     }
@@ -52,10 +52,23 @@ class FrontendDashboard
         $order_id = $ref->reference;
         $order = new \WC_Order($order_id);
         $user = $order->get_user();
+        $fee_total = 0;
+        $fee_total_tax = 0;
+
+	    // Iterating through order fee items ONLY
+	    foreach( $order->get_items('fee') as $item_id => $item_fee ){
+
+		    // The fee total amount
+		    $fee_total += $item_fee->get_total();
+
+		    // The fee total tax amount
+		    $fee_total_tax += $item_fee->get_total_tax();
+	    }
+
 
         ?>
-        <td>&euro; <?php echo round($order->get_total() - $order->get_total_tax(), 2); ?></td>
-        <td>&euro; <?php echo round($order->get_total(), 2); ?></td>
+        <td><?php echo affwp_currency_filter( affwp_format_amount( $order->get_total() - $fee_total - $fee_total_tax)); ?></td>
+        <td><?php echo affwp_currency_filter( affwp_format_amount($order->get_total() - $order->get_total_tax() - $fee_total )); ?></td>
         <?php
     }
 
@@ -67,18 +80,24 @@ class FrontendDashboard
 	public function addExtraTabs($tabs)
 	{
 		wp_enqueue_style("ascension-info-css", XE_ASCENSION_SHOP_PLUGIN_DIR . "/assets/css/refferal-order-info.min.css",null,"1.0.1.7");
-		wp_enqueue_script("html2canvas","https://html2canvas.hertzen.com/dist/html2canvas.min.js","jquery",'1.0.0');
 		wp_enqueue_script("printThis",XE_ASCENSION_SHOP_PLUGIN_DIR . "/assets/js/printThis-master/printThis.min.js");
-
-		wp_enqueue_script("partnerAreaFunctions",XE_ASCENSION_SHOP_PLUGIN_DIR . "/assets/js/partnerAreaFunctions.min.js",array("jquery","html2canvas"),'1.0.14');
+		wp_enqueue_script("partnerAreaFunctions",XE_ASCENSION_SHOP_PLUGIN_DIR . "/assets/js/partnerAreaFunctions.min.js",array("jquery"),'1.0.14');
 
 
 		unset($tabs["referrals"]);
 	    unset($tabs["lifetime-customers"]);
+        unset($tabs["stats"]);
+		unset($tabs["payouts"]);
+		unset($tabs["creatives"]);
+		unset($tabs["settings"]);
+		unset($tabs["waterfall"]);
+		unset($tabs["graphs"]);
 
 		$tabs["commission-overview"] = __("Commissies", "ascension-shop");
 		$tabs["clients-overview"] = __("Klanten", "ascension-shop");
+		$tabs["add-client"] = __("Nieuwe klant aanmaken", "ascension-shop");
 		$tabs["partners"] = __("Partners", "ascension-shop");
+
 
 		return $tabs;
 	}

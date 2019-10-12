@@ -17,7 +17,7 @@ class AddClients
 
     public function __construct()
     {
-        add_action("ascension-after-clients", array($this, "addClientForm"));
+        add_action("ascension-add-client", array($this, "addClientForm"));
         add_action('admin_post_ascension-save_add-client', array($this, "saveNewClient"), 10, 1);
 	    add_action('admin_post_ascension-edit_customer', array($this, "editClient"), 10, 1);
 	    add_action('admin_post_ascension-edit_partner', array($this, "editPartner"), 10, 1);
@@ -71,7 +71,7 @@ class AddClients
 	            update_user_meta($_POST["user_id"],"vat_number",$_REQUEST["vat"]);
 
                 if ($customer > 0) {
-                    MessageHandeling::setMessage(__("Nieuw klant succesvol aangemaakt", "ascension-shop"), "success");
+                    MessageHandeling::setMessage(__("Nieuw klant succesvol aangemaakt", "ascension-shop"), "error");
                 } else {
                     MessageHandeling::setMessage(__("Er ging iets mis, probeer het opnieuw.", "ascension-shop"), "error");
 
@@ -90,13 +90,14 @@ class AddClients
 	    $affiliate_id = affwp_get_affiliate_id(get_current_user_id());
 	    $nonce_verify = wp_verify_nonce($_REQUEST['_wpnonce'], 'ascension_edit_customer' . $affiliate_id);
 
+	    $username = strtolower($_REQUEST["name"] . "." . $_REQUEST["lastname"]);
+
 	    if ($nonce_verify == true && $affiliate_id > 0) {
 
-		    echo wp_update_user(array(
+		    wp_update_user(array(
 		    	'ID' => $_POST["user_id"],
 			    'first_name' => $_POST["name"],
-			    'last_name' => $_POST["lastname"]
-		    ));
+			    'last_name' => $_POST["lastname"]));
 
 		    update_user_meta($_POST["user_id"],"billing_address_1",$_POST["adres"]);
 		    update_user_meta($_POST["user_id"],"billing_city",$_POST["city"]);
@@ -104,10 +105,12 @@ class AddClients
 		    update_user_meta($_POST["user_id"],"billing_postcode",$_POST["postalcode"]);
 		    update_user_meta($_POST["user_id"],"vat_number",$_POST["vat"]);
 
-		    affwp_update_customer($_POST["customer_id"],array(
+		    affwp_update_customer(array(
+		    	"customer_id" => $_POST["customer_id"],
 		    	"first_name" => $_POST["name"],
 			    "last_name" => $_POST["lastname"],
 		    ));
+
 	    }else{
 	    	die("Error: This is not your partner. You cannot edit him.");
 	    }

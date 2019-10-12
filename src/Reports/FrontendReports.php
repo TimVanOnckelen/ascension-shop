@@ -34,6 +34,7 @@ class FrontendReports {
 		}
 	}
 
+
 	private function generatePartnerOverview(){
 
 		$affiliate_id = affwp_get_affiliate_id();

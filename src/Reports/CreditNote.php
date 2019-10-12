@@ -25,6 +25,8 @@ class CreditNote {
 	private $date_to;
 	private $template = '';
 	private $settings = '';
+	private $ref_status = "unpaid";
+
 	/**
 	 * Document slug.
 	 * @var String
@@ -37,6 +39,33 @@ class CreditNote {
 		$this->date_to = $to;
 
 		$this->settings = $this->get_settings();
+
+	}
+
+	public function setRefsToPaid($status="paid"){
+
+		$commissions = $this->getCommissions();
+
+		foreach ($commissions as $c){
+			affwp_set_referral_status($c->ID,$status);
+		}
+
+		$user_id = affwp_get_affiliate_user_id($this->partner_id);
+		$key = md5("report_paid".$this->date_to.$this->date_from.$this->partner_id);
+		// Set this to paid
+		update_user_meta($user_id,$key,$status);
+	}
+
+
+	public function getPaidStatus(){
+
+		$user_id = affwp_get_affiliate_user_id($this->partner_id);
+		$key = md5("report_paid".$this->date_to.$this->date_from.$this->partner_id);
+		$paid_status = get_user_meta($user_id,$key,true);
+
+		if($paid_status == "paid"){
+			$this->ref_status = "paid";
+		}
 
 	}
 
@@ -70,18 +99,34 @@ class CreditNote {
 	}
 	private function getCommissions(){
 
+		// Check if we need to get paid or unpaid items from this creditnote
+		$this->getPaidStatus();
+
 
 		/** @var \AffWP\Referral[] $referrals */
 		$referrals = affiliate_wp()->referrals->get_referrals(
 			array(
 				'number'       => -1,
 				'affiliate_id' => $this->partner_id,
-				'status'       => 'unpaid',
-				'date' => array('start' => $this->date_from,'end' => $this->date_to),
+				'status'       => $this->ref_status,
 				'orderby' => "custom",
 				'order' => 'ASC'
 			)
 		);
+
+		foreach ($referrals as $id => $ref){
+			$date_paid = get_post_meta($ref->reference,"_paid_date",true);
+			$date_paid = strtotime($date_paid);
+			$end_date = strtotime($this->date_to.' 00:00');
+			$start_date = strtotime($this->date_from.' 00:00');
+
+			if($date_paid <= $end_date && $date_paid >= $start_date){
+				continue;
+			}else{// Unset refrence
+				unset($referrals[$id]);
+			}
+
+		}
 
 		return $referrals;
 	}

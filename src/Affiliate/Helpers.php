@@ -277,21 +277,42 @@ class Helpers
 	 *
 	 * @return array
 	 */
-    static function countPerRef($referrals){
+    static function countPerRef($referrals,$date_to=0,$date_from=0){
 
     	$new_array = array();
 
-    	foreach ($referrals as $ref){
+    	foreach ($referrals as $id => $ref){
+
+			    /**
+			     * Filter out by date paid
+			     */
+			    $date_paid  = get_post_meta( $ref->reference, "_paid_date", true );
+			    $date_paid  = strtotime( $date_paid );
+			    $start_date = strtotime( $date_from . ' 00:00' );
+			    $end_date   = strtotime( $date_to . ' 00:00' );
+
+
+			    if ( $date_paid > $end_date OR $date_paid < $start_date ) {
+				    continue;
+			    }
+
     		if(isset($new_array[$ref->affiliate_id])) {
 			    $new_array[ $ref->affiliate_id ]["amount"] += $ref->amount;
 			    $new_array[$ref->affiliate_id]["refs"] += 1;
+
+			    if($ref->status != $new_array[$ref->affiliate_id]["status"] ){
+			    	if($new_array[$ref->affiliate_id]["status"] != 'partially paid'){
+					    $new_array[$ref->affiliate_id]["status"] = 'partially paid';
+				    }
+			    }
+
 		    }else{
 			    $new_array[ $ref->affiliate_id ]["amount"] = $ref->amount;
 			    $new_array[ $ref->affiliate_id ]["affiliate_id"] = $ref->affiliate_id;
 			    $new_array[$ref->affiliate_id]["name"] = affiliate_wp()->affiliates->get_affiliate_name($ref->affiliate_id);
 			    $new_array[$ref->affiliate_id]["email"] = affwp_get_affiliate_email($ref->affiliate_id);
 			    $new_array[$ref->affiliate_id]["refs"] = 1;
-
+			    $new_array[$ref->affiliate_id]["status"] = $ref->status;
 		    }
 	    }
 

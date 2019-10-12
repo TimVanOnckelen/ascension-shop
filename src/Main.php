@@ -19,6 +19,7 @@ use AscensionShop\Affiliate\UserOptions;
 use AscensionShop\Affiliate\VisitManager;
 use AscensionShop\Affiliate\Waterfall;
 use AscensionShop\Affiliate\WoocommerceCheckOut;
+use AscensionShop\Import\DiscountImporter;
 use AscensionShop\Lib\MessageHandeling;
 use AscensionShop\NationalManager\Frontend;
 use AscensionShop\NationalManager\NationalManager;
@@ -76,7 +77,7 @@ class Main
 
         // Legacy for customer & Discount Import
         new CustomerImporter();
-        //new DiscountImporter();
+        new DiscountImporter();
 
 	    new AffiliateReports();
 
@@ -144,7 +145,7 @@ class Main
 	    /**
 	     * National Manager Frontend
 	     */
-        // new Frontend();
+        new Frontend();
     }
 
 

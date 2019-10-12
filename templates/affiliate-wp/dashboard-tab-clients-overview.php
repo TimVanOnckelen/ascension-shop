@@ -13,8 +13,9 @@ $customers    = affiliate_wp_lifetime_commissions()->integrations->get_customers
             </p>
             <p><a href="<?php echo $_SERVER['REQUEST_URI'].'&generateReport=clients';?>"><button><?php _e("Download als XLS","ascension-shop"); ?></button></a></p>
             <p>
-                <a href="#addClient"><?php _e("Nieuwe klant aanmaken"); ?></a>
+                <a href="?tab=add-client"><button><?php _e("Nieuwe klant aanmaken"); ?></button></a>
             </p>
+
 
 		<?php if ( $customers ) : ?>
 
@@ -82,12 +83,11 @@ $customers    = affiliate_wp_lifetime_commissions()->integrations->get_customers
             <p><?php _e( 'You don\'t have any customers yet.', 'ascension-shop' ); ?></p>
 		<?php endif; ?>
 
-		<?php  if(!isset($_GET["ascension-download-report"])){ ?>
+
 			<?php do_action("ascension-after-clients"); ?>
-		<?php } ?>
+
     </div>
 
-<?php  if(!isset($_GET["ascension-download-report"])){ ?>
     <script>
         function searchClientTable() {
             // Declare variables
@@ -111,4 +111,4 @@ $customers    = affiliate_wp_lifetime_commissions()->integrations->get_customers
             }
         }
     </script>
-<?php } ?>
+

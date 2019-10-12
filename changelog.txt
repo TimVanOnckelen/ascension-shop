@@ -1,3 +1,16 @@
+v1.0.8
+**************
+v1.0.7
+**************
+- [new] Credit note can now be exporterd in any lang.
+- [fix] Fixed amounts inc & ex vat on credit notes
+- [fix] Cleaned out the partner area
+- [new] moved add new client to separate tab for speed.
+- [fix] Frontend messages are now shown correctly
+- [fix] Frontend name changes now work
+- [new] credit notes can be set to paid or unpaid
+- [new] Credit notes & frontend overview of commisssions are now based on pay date
+
 v1.0.6
 **************
 - [fix] Inactive partners cannot get any discount.

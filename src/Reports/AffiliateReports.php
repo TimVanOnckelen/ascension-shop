@@ -17,7 +17,11 @@ class AffiliateReports {
 	public function __construct(){
 		add_action( 'admin_menu', array($this, 'web_settings_init') );
 		add_action( 'admin_post_export_affiliates', array($this, 'export_affiliates_payout') );
+		add_action( 'admin_post_export_credit_note_affiliates',array($this,'export_credit_note'));
+		add_action('admin_post_pay_credit_note',array($this,'pay_credit_note'));
 	}
+
+
 
 	public function web_settings_init() {
 		add_submenu_page(
@@ -54,7 +58,7 @@ class AffiliateReports {
 		$referrals = affiliate_wp()->referrals->get_referrals(
 			array(
 				'number'       => -1,
-				'status'       => 'unpaid',
+				'status'       => array("unpaid"),
 				'date' => array('start' => $_GET["from"],'end' => $_GET["to"]),
 			)
 		);
@@ -136,5 +140,20 @@ class AffiliateReports {
 		$writer->save('php://output');
 
 	}
+
+	public function export_credit_note(){
+		do_action( 'wpml_switch_language', $_POST["lang"]);
+		$creditNote = new CreditNote($_POST["start-date"],$_POST["end-date"],$_POST["affiliate"]);
+		$creditNote->generateCreditNote();
+		exit;
+	}
+
+	public function pay_credit_note(){
+		$creditNote = new CreditNote($_POST["start-date"],$_POST["end-date"],$_POST["affiliate"]);
+		$creditNote->setRefsToPaid($_POST["status"]);
+		wp_safe_redirect($_REQUEST["_wp_http_referer"]);
+		exit;
+	}
+
 
 }
