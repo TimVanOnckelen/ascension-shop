@@ -243,6 +243,7 @@ class Helpers
 	    return $parent;
     }
 
+
     static function getPercentageTable($sub,$order,$referral){
 	    /**
 	     * Get the rates
@@ -319,5 +320,29 @@ class Helpers
     	return $new_array;
 
     }
+
+	public static function getCustomerByUserId($user_id)
+	{
+
+		global $wpdb;
+		$query = $wpdb->get_row("SELECT customer_id FROM {$wpdb->prefix}affiliate_wp_customers WHERE user_id='" . $user_id . "'");
+
+		if (isset($query->customer_id)) {
+			return $query->customer_id;
+		}
+		return 0;
+	}
+
+	public static function getParentByCustomerId($customer_id)
+	{
+		global $wpdb;
+		$query = $wpdb->get_row("SELECT meta_value FROM {$wpdb->prefix}affiliate_wp_customermeta WHERE affwp_customer_id='" . $customer_id . "' AND meta_key='affiliate_id'");
+
+		if (isset($query->meta_value)) {
+			return $query->meta_value;
+		}
+		return 0;
+	}
+
 
 }

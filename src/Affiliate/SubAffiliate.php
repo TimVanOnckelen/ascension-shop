@@ -62,6 +62,9 @@ class SubAffiliate
 	{
 
 		$this->parent_id = affwp_get_affiliate_meta($this->affiliate_id, "ascension_parent_id", true);
+		if($this->parent_id == ''){
+			$this->parent_id = 0;
+		}
 
 		return $this->parent_id;
 

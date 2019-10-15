@@ -120,7 +120,7 @@ class Main
         new ClientCouponManager();
 
         // Watefall
-        new Waterfall();
+        // new Waterfall();
 
         // Frontend dashboard options
         new FrontendDashboard();

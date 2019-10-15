@@ -79,9 +79,14 @@ class FrontendDashboard
 	 */
 	public function addExtraTabs($tabs)
 	{
+
+
+		// enque style
+		wp_enqueue_script("dataTables","//cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js","jquery");
+		wp_enqueue_style("dataTables","//cdn.datatables.net/1.10.20/css/jquery.dataTables.min.css");
 		wp_enqueue_style("ascension-info-css", XE_ASCENSION_SHOP_PLUGIN_DIR . "/assets/css/refferal-order-info.min.css",null,"1.0.1.7");
-		wp_enqueue_script("printThis",XE_ASCENSION_SHOP_PLUGIN_DIR . "/assets/js/printThis-master/printThis.min.js");
-		wp_enqueue_script("partnerAreaFunctions",XE_ASCENSION_SHOP_PLUGIN_DIR . "/assets/js/partnerAreaFunctions.min.js",array("jquery"),'1.0.14');
+		wp_enqueue_script("sweetAlert","https://cdn.jsdelivr.net/npm/sweetalert2@8");
+		wp_enqueue_script("partnerAreaFunctions",XE_ASCENSION_SHOP_PLUGIN_DIR . "/assets/js/partnerAreaFunctions.min.js",array("jquery","sweetAlert"),'1.1.10');
 
 
 		unset($tabs["referrals"]);

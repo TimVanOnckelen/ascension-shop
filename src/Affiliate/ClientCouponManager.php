@@ -9,6 +9,8 @@
 namespace AscensionShop\Affiliate;
 
 
+use AscensionShop\NationalManager\NationalManager;
+
 class ClientCouponManager
 {
 
@@ -117,7 +119,14 @@ class ClientCouponManager
         $affiliate_id = affwp_get_affiliate_id(get_current_user_id());
         $nonce_verify = wp_verify_nonce($_REQUEST['_wpnonce'], 'ascension_save_customer_discount_' . $affiliate_id);
 
-        if ($affiliate_id !== false) {
+	    // National manager can mangage anyone :)
+	    if(NationalManager::isNationalManger(get_current_user_id()) == true){
+		    $nonce_verify = true;
+		    $affiliate_id = 1;
+	    }
+
+
+	    if ($affiliate_id !== false) {
 
             if ($nonce_verify == true) {
                 foreach ($_REQUEST["customer_rate"] as $id => $rate) {
@@ -278,5 +287,6 @@ class ClientCouponManager
 		}
 		return 0;
 	}
+
 
 }

@@ -476,4 +476,5 @@ class WoocommerceCheckOut
             WC()->cart->get_cart();
         }
     }
+
 }

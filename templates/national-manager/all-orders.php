@@ -2,7 +2,7 @@
     <p><?php printf(__("Alle orders voor de %s shop","ascenion-shop"),$this->lang[0]); ?><br />
 	    <?php _e("Je kan alle orders filteren op naam, id, status of bedrag.","ascenion-shop"); ?></p>
 
-    <table id="all-orders" class="woocommerce-orders-table woocommerce-MyAccount-orders shop_table shop_table_responsive my_account_orders account-orders-table">
+    <table id="all-orders" class="affwp-table affwp-table-responsive">
 
         <thead>
         <tr>

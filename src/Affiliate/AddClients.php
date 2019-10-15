@@ -11,6 +11,7 @@ namespace AscensionShop\Affiliate;
 
 use AscensionShop\Lib\MessageHandeling;
 use AscensionShop\Lib\TemplateEngine;
+use AscensionShop\NationalManager\NationalManager;
 
 class AddClients
 {
@@ -20,7 +21,11 @@ class AddClients
         add_action("ascension-add-client", array($this, "addClientForm"));
         add_action('admin_post_ascension-save_add-client', array($this, "saveNewClient"), 10, 1);
 	    add_action('admin_post_ascension-edit_customer', array($this, "editClient"), 10, 1);
+	    add_action( 'wp_ajax_ascension-edit_customer', array($this, "editClient"), 10, 1);
+
 	    add_action('admin_post_ascension-edit_partner', array($this, "editPartner"), 10, 1);
+	    add_action('wp_ajax_ascension-edit_partner', array($this, "editPartner"), 10, 1);
+
 
     }
 
@@ -64,10 +69,13 @@ class AddClients
 
                 // Update client discount
                 update_user_meta($user_id, "ascension_shop_affiliate_coupon", $_REQUEST["discount"]);
+	            update_user_meta($_POST["user_id"],"billing_first_name",$_POST["billing_first_name"]);
+	            update_user_meta($_POST["user_id"],"billing_last_name",$_POST["lastname"]);
 	            update_user_meta($_POST["user_id"],"billing_address_1",$_REQUEST["adres"]);
 	            update_user_meta($_POST["user_id"],"billing_city",$_REQUEST["city"]);
 	            update_user_meta($_POST["user_id"],"billing_phone",$_REQUEST["phone"]);
 	            update_user_meta($_POST["user_id"],"billing_postcode",$_REQUEST["postalcode"]);
+	            update_user_meta($_POST["user_id"],"billing_company",$_REQUEST["company"]);
 	            update_user_meta($_POST["user_id"],"vat_number",$_REQUEST["vat"]);
 
                 if ($customer > 0) {
@@ -92,6 +100,13 @@ class AddClients
 
 	    $username = strtolower($_REQUEST["name"] . "." . $_REQUEST["lastname"]);
 
+	    // National manager can mangage anyone :)
+	    if(NationalManager::isNationalManger(get_current_user_id()) == true){
+		    $nonce_verify = true;
+		    $is_partner_of = true;
+		    $affiliate_id = 1;
+	    }
+
 	    if ($nonce_verify == true && $affiliate_id > 0) {
 
 		    wp_update_user(array(
@@ -99,10 +114,13 @@ class AddClients
 			    'first_name' => $_POST["name"],
 			    'last_name' => $_POST["lastname"]));
 
+		    update_user_meta($_POST["user_id"],"billing_first_name",$_POST["billing_first_name"]);
+		    update_user_meta($_POST["user_id"],"billing_last_name",$_POST["lastname"]);
 		    update_user_meta($_POST["user_id"],"billing_address_1",$_POST["adres"]);
 		    update_user_meta($_POST["user_id"],"billing_city",$_POST["city"]);
 		    update_user_meta($_POST["user_id"],"billing_phone",$_POST["phone"]);
 		    update_user_meta($_POST["user_id"],"billing_postcode",$_POST["postalcode"]);
+		    update_user_meta($_POST["user_id"],"billing_company",$_POST["company"]);
 		    update_user_meta($_POST["user_id"],"vat_number",$_POST["vat"]);
 
 		    affwp_update_customer(array(
@@ -110,6 +128,17 @@ class AddClients
 		    	"first_name" => $_POST["name"],
 			    "last_name" => $_POST["lastname"],
 		    ));
+
+		    // Update partner
+		    if(NationalManager::isNationalManger(get_current_user_id()) == true){
+
+			    $partner_id = absint($_POST["ascension_shop_customer_of"]);
+				$customer_id = Helpers::getCustomerByUserId( $_POST["user_id"] );
+
+			    global $wpdb;
+			    $query = $wpdb->query("UPDATE {$wpdb->prefix}affiliate_wp_customermeta SET meta_value='".$partner_id."' WHERE affwp_customer_id='" . $customer_id . "' AND meta_key='affiliate_id'");
+
+		    }
 
 	    }else{
 	    	die("Error: This is not your partner. You cannot edit him.");
@@ -125,26 +154,61 @@ class AddClients
 		$nonce_verify  = wp_verify_nonce( $_REQUEST['_wpnonce'], 'ascension_edit_partner' . $affiliate_id );
 		$sub = new SubAffiliate($affiliate_id);
 		$is_partner_of = $sub->isSubAffiliateOf($_POST["partner_id"]);
+		$user_id = $sub->getUserId();
+
+		// National manager can mangage anyone :)
+		if(NationalManager::isNationalManger(get_current_user_id()) == true){
+			$nonce_verify = true;
+			$is_partner_of = true;
+			$affiliate_id = 1;
+		}
 
 		if ( $is_partner_of == true ) {
 			if ( $nonce_verify == true && $affiliate_id > 0 ) {
 
-				echo wp_update_user( array(
-					'ID'         => $_POST["user_id"],
+				$sub_partner = new SubAffiliate($_POST["partner_id"]);
+
+				wp_update_user(array(
+					'ID' => $user_id,
 					'first_name' => $_POST["name"],
-					'last_name'  => $_POST["lastname"]
-				) );
+					'last_name' => $_POST["lastname"]));
 
-				update_user_meta( $_POST["user_id"], "billing_address_1", $_POST["adres"] );
-				update_user_meta( $_POST["user_id"], "billing_city", $_POST["city"] );
-				update_user_meta( $_POST["user_id"], "billing_phone", $_POST["phone"] );
-				update_user_meta( $_POST["user_id"], "billing_postcode", $_POST["postalcode"] );
-				update_user_meta( $_POST["user_id"], "vat_number", $_POST["vat"] );
+				update_user_meta($user_id,"billing_first_name",$_POST["name"]);
+				update_user_meta($user_id,"billing_last_name",$_POST["lastname"]);
+				update_user_meta( $user_id, "billing_address_1", $_POST["adres"] );
+				update_user_meta( $user_id, "billing_city", $_POST["city"] );
+				update_user_meta( $user_id, "billing_phone", $_POST["phone"] );
+				update_user_meta( $user_id, "billing_postcode", $_POST["postalcode"] );
+				update_user_meta($user_id,"billing_company",$_POST["company"]);
+				update_user_meta( $user_id, "vat_number", $_POST["vat"] );
 
-				affwp_update_affiliate( $_POST["partner_id"], array(
+				$customer_id = Helpers::getCustomerByUserId($user_id);
+
+				// Only if national manager
+				if ( NationalManager::isNationalManger(get_current_user_id()) ) {
+
+					global $wpdb;
+
+					// Update the rate
+					$wpdb->update("{$wpdb->prefix}affiliate_wp_affiliates",array("rate" => $_POST["rate"]),array("affiliate_id" => $_POST["partner_id"]));
+
+
+					// Save parent
+					if($_POST["ascension_shop_customer_of"] != $_POST["partner_id"]) {
+						$sub_partner->saveParent( $_POST["ascension_shop_customer_of"] );
+					}
+
+
+
+				}
+
+				affwp_update_customer(array(
+					"customer_id" => $customer_id,
 					"first_name" => $_POST["name"],
-					"last_name"  => $_POST["lastname"],
-				) );
+					"last_name" => $_POST["lastname"],
+				));
+
+
 			}else{
 				die("Not a valid nonce");
 

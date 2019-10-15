@@ -1,5 +1,12 @@
 v1.0.8
 **************
+- [new] Company can be changed as partner
+- [fix] User names are now updated on billing & user profile when changed as parnter
+- [new] added partners to national mangager
+- [fix] Clients on national manager are not slow anymore now.
+- [fix] edit better messages on editing users
+- [new] NM can change partners parent & rate in frontend
+- [new] NM can change passwords of users on frontend
 v1.0.7
 **************
 - [new] Credit note can now be exporterd in any lang.
