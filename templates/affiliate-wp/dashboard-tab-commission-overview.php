@@ -37,6 +37,15 @@ if(!isset($_GET["status"])){
     <h4><?php _e( 'Referrals', 'affiliate-wp' ); ?></h4>
 
 	<?php
+
+    $filter_Status = array("paid","unpaid");
+    $date = array('start' => $_GET["from"],'end' => $_GET["to"]);
+
+    // Leave dates out when filitering on paid & unpaid statusess
+    if(in_array($_GET["status"],$filter_Status)){
+        $date = null;
+    }
+
 	$per_page  = 500000000;
 	/** @var \AffWP\Referral[] $referrals */
 	$referrals = affiliate_wp()->referrals->get_referrals(
@@ -45,13 +54,36 @@ if(!isset($_GET["status"])){
 			'affiliate_id' => $affiliate_id,
 			'customer_id' => $_GET["client"],
 			'status'       => $_GET["status"],
-            'date' => array('start' => $_GET["from"],'end' => $_GET["to"]),
+            'date' => $date,
             'description' => $_GET["partner"],
             'search' => true,
             'orderby' => "custom",
             'order' => 'ASC'
 		)
 	);
+
+	/**
+	 * Filter out by paid date
+	 */
+        foreach ($referrals as $id => $ref){
+
+            if(in_array($ref->status,$filter_Status)) {
+
+	            $date_paid  = get_post_meta( $ref->reference, "_paid_date", true );
+	            $date_paid  = strtotime( $date_paid );
+	            $end_date   = strtotime( $_GET["to"] . ' 00:00' );
+	            $start_date = strtotime( $_GET["from"] . ' 00:00' );
+
+	            if ( $date_paid <= $end_date && $date_paid >= $start_date ) {
+		            continue;
+	            } else {// Unset refrence
+		            unset( $referrals[ $id ] );
+	            }
+
+            }
+
+        }
+
 
 	$totals = Helpers::getTotalsFromRefs($referrals);
 
@@ -90,16 +122,17 @@ if(!isset($_GET["status"])){
         <tr>
             <th class="referral-order-id"><?php _e( 'Order', 'affiliate-wp' ); ?></th>
             <th class="referral-client"><?php _e( 'Klant', 'affiliate-wp' ); ?></th>
-            <th class="referral-amount"><?php _e( 'Commission', 'affiliate-wp' ); ?></th>
             <th class="referral-percentage"><?php _e( 'Percentage', 'affiliate-wp' ); ?></th>
             <th class="referral-status"><?php _e( 'Status', 'affiliate-wp' ); ?></th>
             <th class="referral-date"><?php _e( 'Datum', 'affiliate-wp' ); ?></th>
+            <th class="referral-date"><?php _e( 'Betaal datum', 'affiliate-wp' ); ?></th>
             <?php
 			/**
 			 * Fires in the dashboard referrals template, within the table header element.
 			 */
 			do_action( 'affwp_referrals_dashboard_th' );
 			?>
+            <th class="referral-amount"><?php _e( 'Commission', 'affiliate-wp' ); ?></th>
         </tr>
         </thead>
 
@@ -154,7 +187,6 @@ if(!isset($_GET["status"])){
 
                     </td>
                     <td><?php echo $user->first_name . " " . $user->last_name; ?></td>
-                    <td class="referral-amount" data-th="<?php _e( 'Commission', 'affiliate-wp' ); ?>"><?php echo affwp_currency_filter( affwp_format_amount( $referral->amount ) ); ?></td>
                     <td class="referral-percentage" data-th="<?php _e( 'Percentage', 'affiliate-wp' ); ?>">
 
                        <?php echo $percentage; ?>
@@ -162,6 +194,7 @@ if(!isset($_GET["status"])){
                     </td>
                     <td class="referral-status <?php echo $referral->status; ?>" data-th="<?php _e( 'Status', 'affiliate-wp' ); ?>"><?php echo affwp_get_referral_status_label( $referral );  ?></td>
                     <td class="referral-date" data-th="<?php _e( 'Date', 'affiliate-wp' ); ?>"><?php echo esc_html( $referral->date_i18n( 'datetime' ) ); ?></td>
+                    <td><?php echo  get_post_meta( $referral->reference, "_paid_date", true ); ?></td>
 					<?php
 					/**
 					 * Fires within the table data of the dashboard referrals template.
@@ -169,6 +202,8 @@ if(!isset($_GET["status"])){
 					 * @param \AffWP\Referral $referral Referral object.
 					 */
 					do_action( 'affwp_referrals_dashboard_td', $referral ); ?>
+                    <td class="referral-amount" data-th="<?php _e( 'Commission', 'affiliate-wp' ); ?>"><?php echo affwp_currency_filter( affwp_format_amount( $referral->amount ) ); ?></td>
+
                 </tr>
 			<?php endforeach; ?>
 
@@ -179,7 +214,7 @@ if(!isset($_GET["status"])){
             </tr>
 
 		<?php endif; ?>
-        <tr><td><b><?php _e("Totaal","ascension-shop"); ?></b></td><td></td><td>&euro; <?php echo $totals["total"]; ?></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td><b><?php _e("Totaal","ascension-shop"); ?></b></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td>&euro; <?php echo $totals["total"]; ?></td></tr>
         </tbody>
     </table>
 

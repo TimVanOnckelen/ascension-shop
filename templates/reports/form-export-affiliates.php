@@ -38,6 +38,7 @@ if(!isset($_GET["start-date"])){
             <th><?php _e("Naam","ascension-shop"); ?></th>
             <th><?php _e("Bedrag","ascension-shop"); ?></th>
             <th><?php _e("Aantal referrals","ascension-shop"); ?></th>
+            <th><?php _e("Status","ascension-shop"); ?></th>
             <th><?php _e("Acties","ascension-shop"); ?></th>
 
         </tr>
@@ -46,21 +47,29 @@ if(!isset($_GET["start-date"])){
     $referrals = affiliate_wp()->referrals->get_referrals(
 	    array(
 		    'number'       => -1,
-		    'status'       => 'unpaid',
-		    'date' => array('start' => $_GET["start-date"],'end' => $_GET["end-date"]),
+		    'status'       => array("unpaid","paid"),
 	    )
     );
 
-    $ref_totals = Helpers::countPerRef($referrals);
+    $ref_totals = Helpers::countPerRef($referrals,$_GET["end-date"],$_GET["start-date"]);
 
     foreach ($ref_totals as $ref){
         ?>
         <tr><td><?php echo $ref["affiliate_id"];?></td>
             <td><?php echo $ref["name"];?></td>
             <td><?php echo affwp_currency_filter( affwp_format_amount( $ref["amount"]));?></td>
-            <td><?php echo $ref["refs"];?></td>
+            <td><?php echo $ref["refs"]; ?></td>
+            <td><?php echo $ref["status"];?></td>
             <td>
                 <form action="admin-post.php" method="post">
+                    <p>
+                        <label for="languages"><?=__("Selecteer uw taal","ascension-shop")?></label>
+                        <select class="short" name="lang" required>
+			                <?php $i = 1; foreach($this->lang as $item){ ?>
+                                <option value="<?php echo $item["code"]; ?>"><?=$item['translated_name']?> / <?=$item['native_name']?></option>
+				                <?php $i++; } ?>
+                        </select>
+                    </p>
                     <input class="hidden" type="text" name="start-date" value="<?php echo $_GET["start-date"]; ?>">
                     <input class="hidden" type="text" name="end-date"  value="<?php echo $_GET["end-date"]; ?>">
                     <input type="hidden" value="<?php echo $ref["affiliate_id"]; ?>" name="affiliate">
@@ -68,6 +77,23 @@ if(!isset($_GET["start-date"])){
                     <input type="hidden" name="action" value="export_credit_note_affiliates">
                     <input type="submit" class="button button-primary button-large" value="<?=__('Export as pdf')?>">
                 </form>
+
+                <p>
+                <form action="admin-post.php" method="post">
+                <input class="hidden" type="text" name="start-date" value="<?php echo $_GET["start-date"]; ?>">
+                <input class="hidden" type="text" name="end-date"  value="<?php echo $_GET["end-date"]; ?>">
+                    <input type="hidden" name="action" value="pay_credit_note">
+                    <input type="hidden" value="<?php echo $ref["affiliate_id"]; ?>" name="affiliate">
+                    <?php wp_referer_field(); ?>
+                    <?php if($ref["status"] == "unpaid"){ ?>
+                        <input type="hidden" name="status" value="paid" />
+                        <input type="submit" class="button button-primary button-large" value="<?=__('Mark as paid')?>">
+                    <?php }else {?>
+                        <input type="hidden" name="status" value="unpaid" />
+                        <input type="submit" class="button button-primary button-large" value="<?=__('Mark as unpaid')?>">
+                    <?php }?>
+                </form>
+                </p>
             </td>
         </tr>
     <?php

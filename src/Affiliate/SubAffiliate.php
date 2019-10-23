@@ -62,6 +62,9 @@ class SubAffiliate
 	{
 
 		$this->parent_id = affwp_get_affiliate_meta($this->affiliate_id, "ascension_parent_id", true);
+		if($this->parent_id == ''){
+			$this->parent_id = 0;
+		}
 
 		return $this->parent_id;
 
@@ -238,9 +241,15 @@ class SubAffiliate
 	public function getAllChildren($active=2){
 
 		$children = Helpers::getAllChilderen($this->affiliate_id);
-		$this->loopOverChildren($children,$this->affiliate_id,$active);
 
-		return $this->children_array;
+		if(isset($children)){
+
+			$this->loopOverChildren( $children, $this->affiliate_id, $active );
+			return $this->children_array;
+
+		}else{
+			return null;
+		}
 	}
 
 	/**
@@ -250,34 +259,35 @@ class SubAffiliate
 	private function loopOverChildren($children, $parent_id,$status=2)
 	{
 
-		foreach ($children as $c) {
+		if(isset($children) && is_array($children)) {
+			foreach ( $children as $c ) {
 
-			$sub = new SubAffiliate($c->affiliate_id);
-			$affiliate_name = affiliate_wp()->affiliates->get_affiliate_name($c->affiliate_id);
+				$sub            = new SubAffiliate( $c->affiliate_id );
+				$affiliate_name = affiliate_wp()->affiliates->get_affiliate_name( $c->affiliate_id );
 
-			if($sub->getStatus() == 1 && $status == 1){
-				// Add to waterfall
-				$this->children_array[] = $sub;
+				if ( $sub->getStatus() == 1 && $status == 1 ) {
+					// Add to waterfall
+					$this->children_array[] = $sub;
+				}
+
+				if ( $sub->getStatus() == 0 && $status == 0 ) {
+					// Add to waterfall
+					$this->children_array[] = $sub;
+				}
+
+				if ( $status == 2 ) {
+					// Add to waterfall
+					$this->children_array[] = $sub;
+				}
+
+
+				// Do untill there are no children anymore
+				$children = Helpers::getAllChilderen( $c->affiliate_id );
+				if ( $children != false ) {
+					self::loopOverChildren( $children, $c->affiliate_id, $status );
+				}
+
 			}
-
-			if($sub->getStatus() == 0 && $status == 0){
-				// Add to waterfall
-				$this->children_array[] = $sub;
-			}
-
-			if($status == 2){
-				// Add to waterfall
-				$this->children_array[] = $sub;
-			}
-
-
-
-			// Do untill there are no children anymore
-			$children = Helpers::getAllChilderen($c->affiliate_id);
-			if ($children != false) {
-				self::loopOverChildren($children, $c->affiliate_id,$status);
-			}
-
 		}
 
 	}

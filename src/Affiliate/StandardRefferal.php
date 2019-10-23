@@ -94,7 +94,7 @@ class StandardRefferal
     {
         affiliate_wp()->tracking->set_affiliate_id($own);
         global $wp;
-        error_log("Ref set to:" . $own);
+        // error_log("Ref set to:" . $own);
         // wp_safe_redirect(affwp_get_affiliate_referral_url($own));
     }
 

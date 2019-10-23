@@ -10,10 +10,7 @@
            # <?php echo $o->get_id(); ?>
 
         </td>
-        <td class="woocommerce-orders-table__cell woocommerce-orders-table__cell-order-date" data-title="Datum">
-            <?php echo $o->get_date_created()->date("F j, Y, g:i:s A T"); ?>
 
-        </td>
         <td class="woocommerce-orders-table__cell woocommerce-orders-table__cell-order-status" data-title="Status">
             <?php echo $o->get_status(); ?>
         </td>
@@ -31,6 +28,10 @@
             $t->order = $o;
             echo $t->display("affiliate-wp/dashboard-order-info.php");
             ?>
+        </td>
+        <td class="woocommerce-orders-table__cell woocommerce-orders-table__cell-order-date" data-title="Datum">
+		    <?php echo $o->get_date_created()->date("F j, Y, g:i:s A T"); ?>
+
         </td>
     </tr>
     <?php } ?>

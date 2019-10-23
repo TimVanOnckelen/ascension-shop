@@ -17,7 +17,6 @@ class BackendReports {
 		add_action( 'admin_menu', array($this, 'web_settings_init') );
 		add_action( 'admin_post_export_sales', array($this, 'export_sales') );
 		add_action( 'admin_post_export_orders', array($this, 'export_orders') );
-		add_action( 'admin_post_export_credit_note_affiliates',array($this,'export_credit_note'));
 	}
 
 	public function web_settings_init() {
@@ -330,10 +329,5 @@ dashicons-format-status');
 
 	}
 
-	public function export_credit_note(){
-		$creditNote = new CreditNote($_POST["start-date"],$_POST["end-date"],$_POST["affiliate"]);
-		$creditNote->generateCreditNote();
-		exit;
-	}
 
 }

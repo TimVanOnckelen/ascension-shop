@@ -39,7 +39,10 @@ class WoocommerceCheckOut
             ));
         });
 
-        add_filter("woocommerce_payment_gateways", array($this, "addGateway"), 10, 1);
+        // Add notice
+	    // add_filter( 'woocommerce_before_cart', array($this,"returnNoticeOfOtherPartner"), 10);
+
+	    add_filter("woocommerce_payment_gateways", array($this, "addGateway"), 10, 1);
 
         add_filter("woocommerce_checkout_update_order_meta", array($this, "saveShippingAdress"));
         add_filter("woocommerce_checkout_update_order_meta", array($this, "saveDifferentEmail"));
@@ -59,11 +62,15 @@ class WoocommerceCheckOut
 
         $aff_id = affwp_get_affiliate_id();
 
+        // Load global js & css
+	    wp_enqueue_script("select2","https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.11/js/select2.min.js");
+		wp_enqueue_style("select2","https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.11/css/select2.min.css");
+
         // Only load on checkout as affiliate
         if (is_checkout() && $aff_id > 0) {
             wp_enqueue_style("ascension-shop-toggle", XE_ASCENSION_SHOP_PLUGIN_DIR . 'assets/css/toggles.min.css');
             wp_enqueue_script("ascension-unserialize", XE_ASCENSION_SHOP_PLUGIN_DIR . 'assets/js/unserialize.min.js');
-            wp_enqueue_script("ascension-shop-checkout", XE_ASCENSION_SHOP_PLUGIN_DIR . 'assets/js/ascension-affiliate-checkout.min.js', null, '1.0.1');
+            wp_enqueue_script("ascension-shop-checkout", XE_ASCENSION_SHOP_PLUGIN_DIR . 'assets/js/ascension-affiliate-checkout.min.js', null, '1.0.6');
             // Add details
             wp_localize_script('ascension-shop-checkout', 'ascension', array(
                 'root' => esc_url_raw(rest_url()),
@@ -91,7 +98,7 @@ class WoocommerceCheckOut
 	        }
 
 	        $t = new TemplateEngine();
-            $customers = affiliate_wp_lifetime_commissions()->integrations->get_customers_for_affiliate($aff_id);
+            $customers = Helpers::getAllCustomersFromPartnerAndSubs($aff_id);
             usort($customers, function ($first, $second) {
                 return strcasecmp($first->first_name, $second->first_name);
             });
@@ -110,25 +117,28 @@ class WoocommerceCheckOut
     public function changeCustomerIdOnOrder($customer_id)
     {
 
-        $aff_id = affwp_get_affiliate_id(get_current_user_id());
-        $custom_customer = WC()->session->get('ascension_affiliate_client_id_order');
+	    $aff_id = affwp_get_affiliate_id(get_current_user_id());
+	    $custom_customer = WC()->session->get('ascension_affiliate_client_id_order');
 
-        if ($custom_customer <= 0) {
-            return $customer_id;
-        }
+	    if ($custom_customer <= 0) {
+		    return $customer_id;
+	    }
 
-        $is_customer = affiliate_wp_lifetime_commissions()->integrations->is_customer_of_affiliate($custom_customer, $aff_id);
-        // get the customer id
-        $custom_customer = $this->getUserId($custom_customer);
+	    $is_customer = Helpers::isClientOfPartnerOfSubPartner($custom_customer, $aff_id);
+	    // get the customer id
+	    $custom_customer = $this->getUserId($custom_customer);
 
-        if ($is_customer > 0) {
+	    if ($is_customer > 0) {
 
-            if (isset($custom_customer) && is_numeric($custom_customer)) {
-                return $custom_customer;
-            }
-        }
-        // Nothing to do, just return
-        return $customer_id;
+		    if (isset($custom_customer) && is_numeric($custom_customer)) {
+			    return $custom_customer;
+		    }
+
+	    }
+	    // Nothing to do, just return
+	    return $customer_id;
+
+
     }
 
     /**
@@ -155,19 +165,42 @@ class WoocommerceCheckOut
             // Set client id
             WC()->session->set('ascension_affiliate_client_id_order', $formData["customer"]);
             WC()->session->set('ascension_affiliate_who_pays_order', $formData["who_pays"]);
+	        WC()->session->set( 'ascension_affiliate_order_for_child_affiliate', false );
 
             // Return the client data
             $data["customer"] = $this->setUpCustomerResponse($formData["customer"]);
             $data["status"] = true;
 
-        } else {
-            WC()->session->set('ascension_affiliate_client_id_order', 0);
-            WC()->session->set('ascension_affiliate_who_pays_order', false);
 
+        } else {
+
+        	// Get parent of client
+	        $parent_client = Helpers::getParentByCustomerId($formData["customer"]);
+	        $parent_client = new SubAffiliate($parent_client);
+	        $is_child_of_partner = Helpers::isClientOfPartnerOfSubPartner($formData["customer"],$aff_id);
+
+	           if($parent_client->getId() != $aff_id) {
+	           	    // Affiliate is making an order for an other affiliate OR client of other affiliate
+		           WC()->session->set( 'ascension_affiliate_client_id_order', $formData["customer"] );
+		           WC()->session->set('ascension_affiliate_who_pays_order', $formData["who_pays"]);
+		           WC()->session->set( 'ascension_affiliate_order_for_child_affiliate', $parent_client->getUserId() );
+		        } else{
+		        	// Just an order for itself
+			        WC()->session->set( 'ascension_affiliate_client_id_order', 0 );
+			        WC()->session->set( 'ascension_affiliate_who_pays_order', false );
+		           WC()->session->set( 'ascension_affiliate_order_for_child_affiliate', false );
+
+	           }
+
+
+	        $data["original_partner"] = $parent_client->getId();
             $data["customer"] = $this->setUpCustomerResponse($formData["customer"]);
 
             $data["status"] = true;
         }
+
+        // Add notices
+        $this->returnNoticeOfOtherPartner();
 
         // Create the response object
         $response = new \WP_REST_Response($data);
@@ -177,6 +210,27 @@ class WoocommerceCheckOut
 
         // Return response
         return $response;
+
+    }
+
+    public function returnNoticeOfOtherPartner(){
+	    $other_partner = WC()->session->get('ascension_affiliate_order_for_child_affiliate' );
+	    $who_pays = WC()->session->get('ascension_affiliate_who_pays_order');
+
+	    wc_clear_notices();
+
+	    if($other_partner > 0 && $who_pays == "false"){
+		    $aff_id = affwp_get_affiliate_id();
+
+	    	$other_partner = affwp_get_affiliate_id($other_partner);
+
+		    if($other_partner == $aff_id){
+			    return;
+		    }
+
+		    $sub = new SubAffiliate($other_partner);
+	    	wc_add_notice(sprintf(__("Je maakt een order voor een klant van jouw sub-partner %s. Zijn/haar percentage (%s%s) wordt toegepast."),$sub->getName(),$sub->getUserRate(),"%"),"notice");
+	    }
 
     }
 
@@ -229,27 +283,35 @@ class WoocommerceCheckOut
     public function addCustomOrderNote($order_id)
     {
 
+	    wc_clear_notices();
+
         $aff_id = affwp_get_affiliate_id(get_current_user_id());
         $custom_customer = WC()->session->get('ascension_affiliate_client_id_order');
         $who_pays = WC()->session->get('ascension_affiliate_who_pays_order');
+		$order_rate = 	WC()->session->get('ascension_order_rate');
 
-        if ($custom_customer > 0 && $aff_id > 0) {
-            $order = new \WC_Order($order_id);
+	    $order = new \WC_Order($order_id);
+
+	    $order->update_meta_data('_ascension_order_rate',$order_rate);
+
+	    if ($custom_customer > 0 && $aff_id > 0) {
 
             // Add meta from order maker
             $order->update_meta_data('_ascension_order_maker', $aff_id);
             $order->update_meta_data('_ascension_order_payer', $who_pays);
 
+            $sub = new SubAffiliate($aff_id);
+
             // The text for the note
-            $note = __("Bestelling gemaakt door Affiliate Partner " . $aff_id, "ascension-shop");
+            $note = __("Bestelling gemaakt door Affiliate Partner #" . $aff_id. " ".$sub->getName(), "ascension-shop");
 
             // Add the note
             $order->add_order_note($note);
 
-            // Save the data
-            $order->save();
         }
 
+	    // Save the data
+	    $order->save();
     }
 
     public function saveDifferentEmail($order_id)
@@ -265,15 +327,13 @@ class WoocommerceCheckOut
         if ($parent_id <= 0) {
             return;
         } else {
-            if ($payer == 1) { // client pays
+            if ($payer == "true" OR $payer === true) { // client pays
                 //if ($order->get_payment_method() != "mollie_wc_gateway_banktransfer") { // Affiliate will get email with order details
                     return;
                 //}
             }
         }
         // Partner pays, so everything goes to partner.
-
-
         $parent = get_user_by('id', $parent_id);
         // Change billing email
         $order->set_billing_email($parent->user_email);
@@ -332,18 +392,21 @@ class WoocommerceCheckOut
     {
 
         $custom_customer = WC()->session->get('ascension_affiliate_client_id_order');
-        $who_pays = WC()->session->get('ascension_affiliate_who_pays_order');
+	    $custom_partner = WC()->session->get('ascension_affiliate_order_for_child_affiliate');
+	    $who_pays = WC()->session->get('ascension_affiliate_who_pays_order');
 
-        // Change to user id
-        $custom_customer = $this->getUserId($custom_customer);
-        if ($custom_customer == 0) {
-            return $user_id;
-        }
-
-        // client has to pay, so add diffrent user for coupons
-        if ($who_pays !== false && $custom_customer != false && $custom_customer > 0) {
-            return $custom_customer;
-        }
+	    // If current user pays, return he's id or from the custom partner
+	    if($who_pays == "false"){
+	    	if($custom_partner != '' && $custom_partner > 0){
+	    		return $custom_partner;
+		    }else{
+	    		return $user_id;
+		    }
+	    }else{
+	    	if($custom_customer > 0){
+	    		return $this->getUserId($custom_customer);
+		    }
+	    }
 
         // Just regular id :)
         return $user_id;
@@ -421,14 +484,14 @@ class WoocommerceCheckOut
         $payer = get_post_meta($order->get_id(), '_ascension_order_payer', true);
         $parent_id = affwp_get_affiliate_user_id($parent_id);
 
+        error_log($payer);
+
         // Nothing to do, just go on :)
         if ($parent_id <= 0) {
             return $recipient;
         } else {
-            if ($payer == 1) {
-               // if ($order->get_payment_method() != "mollie_wc_gateway_banktransfer") {
+            if ($payer == "true" OR $payer === true) {
                     return $recipient;
-                //}
             }
         }
 
@@ -476,4 +539,5 @@ class WoocommerceCheckOut
             WC()->cart->get_cart();
         }
     }
+
 }

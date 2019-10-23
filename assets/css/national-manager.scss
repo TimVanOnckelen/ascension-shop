@@ -12,15 +12,18 @@
 
 #tab1:checked ~ section .tab1,
 #tab2:checked ~ section .tab2,
-#tab3:checked ~ section .tab3 {
+#tab3:checked ~ section .tab3,
+#tab4:checked ~ section .tab4{
   display: block;
 }
 
 #tab1:checked ~ nav .tab1,
 #tab2:checked ~ nav .tab2,
-#tab3:checked ~ nav .tab3 {
+#tab3:checked ~ nav .tab3,
+#tab3:checked ~ nav .tab4{
   color: red;
 }
+
 
 ul.ascension-sub-menu {
   margin: 0;
@@ -37,3 +40,16 @@ ul.ascension-sub-menu {
 .dataTables_wrapper .dataTables_filter {
   margin-right: 51px;
 }
+.dataTables_wrapper .dataTables_processing {
+  position: absolute;
+  width: 100%;
+  height: 92%;
+  right: 0;
+  margin-bottom: -110px;
+  z-index: 100;
+  background-color: rgba(255,255,255,1);
+  top: 109px;
+  /* bottom: -192px; */
+  display: block;
+}
+table.wpem-responsive-table-wrapper tbody tr td .wpem-dboard-event-action .wpem-dboard-event-act-btn a.event-dashboard-action-approve::before { content: "\eab4"; }

@@ -8,9 +8,8 @@
 
 namespace AscensionShop;
 
-use AscensionShop\Affiliate\AddClients;
+use AscensionShop\PartnerArea\AddClients;
 use AscensionShop\Affiliate\ClientCouponManager;
-use AscensionShop\Affiliate\FrontendDashboard;
 use AscensionShop\Affiliate\Mails;
 use AscensionShop\Affiliate\RateLevelsInit;
 use AscensionShop\Affiliate\ReferralManager;
@@ -19,9 +18,11 @@ use AscensionShop\Affiliate\UserOptions;
 use AscensionShop\Affiliate\VisitManager;
 use AscensionShop\Affiliate\Waterfall;
 use AscensionShop\Affiliate\WoocommerceCheckOut;
+use AscensionShop\Import\DiscountImporter;
 use AscensionShop\Lib\MessageHandeling;
 use AscensionShop\NationalManager\Frontend;
 use AscensionShop\NationalManager\NationalManager;
+use AscensionShop\PartnerArea\FrontendDashboard;
 use AscensionShop\Reports\AffiliateReports;
 use AscensionShop\Reports\BackendReports;
 use AscensionShop\Reports\FrontendReports;
@@ -76,7 +77,7 @@ class Main
 
         // Legacy for customer & Discount Import
         new CustomerImporter();
-        //new DiscountImporter();
+        new DiscountImporter();
 
 	    new AffiliateReports();
 
@@ -119,8 +120,11 @@ class Main
         new ClientCouponManager();
 
         // Watefall
-        new Waterfall();
+        // new Waterfall();
 
+	    /**
+	     * Partner Area
+	     */
         // Frontend dashboard options
         new FrontendDashboard();
 
@@ -144,7 +148,7 @@ class Main
 	    /**
 	     * National Manager Frontend
 	     */
-        // new Frontend();
+        new Frontend();
     }
 
 

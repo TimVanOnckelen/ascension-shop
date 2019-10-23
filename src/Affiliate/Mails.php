@@ -14,7 +14,7 @@ class Mails
 
     function __construct()
     {
-        add_filter("affwp_notify_on_new_referral", array($this, "checkIfRefferalIsNotZero"), 10, 1);
+        add_filter("affwp_notify_on_new_referral", array($this, "checkIfRefferalIsNotZero"), 10, 2);
     }
 
 	/**
@@ -28,7 +28,7 @@ class Mails
     {
         // Don't send zero commision mails
         if($referral->amount <= 0) {
-            error_log("Zero commission mail for ".$object->refferal->referral_id." cancelled");
+            error_log("Zero commission mail for ".$referral->refferal->referral_id." cancelled");
             return false;
         }
 

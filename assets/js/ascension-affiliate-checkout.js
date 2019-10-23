@@ -89,7 +89,7 @@
         addLoader();
 
         let customer_id = $("#ascension-clients").val();
-        let whoPays = $("#ascension-who-pay").is(":checked");
+        let whoPays = $("[name='ascension-who-pays']:checked").val();
 
         // No user id? Return
         if(customer_id < 0){
@@ -115,7 +115,7 @@
 
         });
 
-        $('#ascension-who-pay').on("change",function () {
+        $('[name="ascension-who-pays"]').on("change",function () {
 
             changeTrigger();
 
@@ -125,11 +125,11 @@
 
     function toggleWatcher(){
 
-        $('#ascension-order-for').on("change",function () {
+        $('[name="ascension-order-for"]').on("change",function () {
 
-            let isChecked = $("#ascension-order-for:checked").length;
+            let isChecked = $("[name='ascension-order-for']:checked").val();
 
-            if(isChecked === 1){
+            if(isChecked === "client"){
                 $(clientsForm).show();
             }else{
                 $(clientsForm).hide();
@@ -141,7 +141,7 @@
                 // Reset customer
                 loadCustomer(0,0);
 
-                if(formCache != null){
+                if(formCache){
                     $(".woocommerce-checkout").unserializeForm(formCache);
                 }
             }
@@ -160,6 +160,8 @@
 
 
     $(document).on("ready",function () {
+
+        $("#ascension-clients").select2({width:'100%'});
 
         // Reset on every refresh
         loadCustomer(0,0);

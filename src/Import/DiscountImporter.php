@@ -22,12 +22,12 @@ class DiscountImporter
     public function doCustomerImportDry()
     {
 
-        if (is_admin() && isset($_REQUEST["ascension-discount-inmport"])) {
+        if (is_admin() && isset($_REQUEST["ascension-discount-import"])) {
 
             $amount_of_exsisting = 0;
             $failed = 0;
 
-            $csv = array_map("str_getcsv", file(XE_ASCENSION_SHOP_PLUGIN_PATH . "/import/klanten_to_import.csv", FILE_SKIP_EMPTY_LINES));
+            $csv = array_map("str_getcsv", file(XE_ASCENSION_SHOP_PLUGIN_PATH . "/import/partners_de.csv", FILE_SKIP_EMPTY_LINES));
             $keys = array_shift($csv);
 
             foreach ($csv as $i => $row) {
@@ -39,22 +39,26 @@ class DiscountImporter
 
             foreach ($csv as $user) {
 
-                if (!isset($user["email"])) {
+
+                if (!isset($user["Email"])) {
                     continue;
                 }
 
 
-                if (email_exists($user["email"])) {
-
-                    $user_id = get_user_by("email", $user["email"]);
+                if (email_exists($user["Email"])) {
+                    $user_id = get_user_by("email", $user["Email"]);
                     $user_id = $user_id->ID;
 
-                    if (isset($user["discount"])) {
+                    if (isset($user["adres"])) {
                         // Set discount
-                        $user["discount"] = str_replace(";", "", $user["discount"]);
-                        echo "Set user " . $user_id . " to " . $user["discount"];
+                        echo "Set user " . $user_id . " adress to " . $user["adres"];
 
-                        update_user_meta($user_id, "ascension_shop_affiliate_coupon", $user["discount"]);
+	                    update_user_meta($user_id,"billing_address_1",$user["adres"]);
+	                    update_user_meta($user_id,"billing_city",$user["stad"]);
+	                    update_user_meta($user_id,"billing_postcode",$user["postcode"]);
+	                    update_user_meta($user_id,"billing_country",$user["land"]);
+	                    update_user_meta($user_id,"billing_phone",$user["telefoon"]);
+
                     } else {
                         print_r($user);
                     }

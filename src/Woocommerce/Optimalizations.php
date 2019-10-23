@@ -36,7 +36,7 @@ class Optimalizations
                 <th><label for="vat_number"><?php _e("Btw nummer"); ?></label></th>
                 <td>
                     <input type="text" name="vat_number" id="vat_number"
-                           value="<?php echo esc_attr(get_the_author_meta('vat_number', $user->ID)); ?>"
+                           value="<?php echo esc_attr(get_user_meta($user->ID,'vat_number',true)); ?>"
                            class="regular-text"/><br/>
                     <span class="description"><?php _e("BTW nummer van de gebruiker."); ?></span>
                 </td>
@@ -51,7 +51,7 @@ class Optimalizations
         if (!current_user_can('edit_user', $user_id)) {
             return false;
         }
-        update_user_meta($user_id, 'address', $_POST['vat_number']);
+        update_user_meta($user_id, 'vat_number', $_POST['vat_number']);
 
     }
 

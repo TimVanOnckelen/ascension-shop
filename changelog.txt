@@ -1,3 +1,31 @@
+v1.0.9
+**************
+- [new] You can now place an order for anyone beneath you as a partner
+- [fix] Save "client of"  of clients that are not a client yet now works
+- [fix] Partner area users is upgraded
+- [fix] Partners are excluded from client search
+- [new] New partners can now be added from the NM area
+- [new] Rate of discount is now added to order
+v1.0.8
+**************
+- [new] Company can be changed as partner
+- [fix] User names are now updated on billing & user profile when changed as parnter
+- [new] added partners to national mangager
+- [fix] Clients on national manager are not slow anymore now.
+- [fix] edit better messages on editing users
+- [new] NM can change partners parent & rate in frontend
+- [new] NM can change passwords of users on frontend
+v1.0.7
+**************
+- [new] Credit note can now be exporterd in any lang.
+- [fix] Fixed amounts inc & ex vat on credit notes
+- [fix] Cleaned out the partner area
+- [new] moved add new client to separate tab for speed.
+- [fix] Frontend messages are now shown correctly
+- [fix] Frontend name changes now work
+- [new] credit notes can be set to paid or unpaid
+- [new] Credit notes & frontend overview of commisssions are now based on pay date
+
 v1.0.6
 **************
 - [fix] Inactive partners cannot get any discount.

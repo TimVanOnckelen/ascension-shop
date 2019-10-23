@@ -243,6 +243,7 @@ class Helpers
 	    return $parent;
     }
 
+
     static function getPercentageTable($sub,$order,$referral){
 	    /**
 	     * Get the rates
@@ -252,14 +253,15 @@ class Helpers
 	    $return_rate = $user_rate;
 	    $total = $order->get_subtotal();
 	    $amount = round( $referral->amount, 2 );
-	    $amount_check = round( $user_rate * ( $total / 100 ), 2 );
+	    $amount_check = round( $user_rate * ( $total / 100 ) );
+
 
 	    /**
 	     * Check if there is a new rate
 	     */
 	    if ( $amount_check != $amount ) {
 		    $min            = $amount_check - $amount;
-		    $min_percentage = round( 100 * ( $min / $total ), 2 );
+		    $min_percentage = round( 100 * ( $min / $total ), 0 );
 		    if ( $min_percentage > $user_rate ) {
 			    $min_percentage = $user_rate;
 		    }
@@ -277,26 +279,150 @@ class Helpers
 	 *
 	 * @return array
 	 */
-    static function countPerRef($referrals){
+    static function countPerRef($referrals,$date_to=0,$date_from=0){
 
     	$new_array = array();
 
-    	foreach ($referrals as $ref){
+    	foreach ($referrals as $id => $ref){
+
+			    /**
+			     * Filter out by date paid
+			     */
+			    $date_paid  = get_post_meta( $ref->reference, "_paid_date", true );
+			    $date_paid  = strtotime( $date_paid );
+			    $start_date = strtotime( $date_from . ' 00:00' );
+			    $end_date   = strtotime( $date_to . ' 00:00' );
+
+
+			    if ( $date_paid > $end_date OR $date_paid < $start_date ) {
+				    continue;
+			    }
+
     		if(isset($new_array[$ref->affiliate_id])) {
 			    $new_array[ $ref->affiliate_id ]["amount"] += $ref->amount;
 			    $new_array[$ref->affiliate_id]["refs"] += 1;
+
+			    if($ref->status != $new_array[$ref->affiliate_id]["status"] ){
+			    	if($new_array[$ref->affiliate_id]["status"] != 'partially paid'){
+					    $new_array[$ref->affiliate_id]["status"] = 'partially paid';
+				    }
+			    }
+
 		    }else{
 			    $new_array[ $ref->affiliate_id ]["amount"] = $ref->amount;
 			    $new_array[ $ref->affiliate_id ]["affiliate_id"] = $ref->affiliate_id;
 			    $new_array[$ref->affiliate_id]["name"] = affiliate_wp()->affiliates->get_affiliate_name($ref->affiliate_id);
 			    $new_array[$ref->affiliate_id]["email"] = affwp_get_affiliate_email($ref->affiliate_id);
 			    $new_array[$ref->affiliate_id]["refs"] = 1;
-
+			    $new_array[$ref->affiliate_id]["status"] = $ref->status;
 		    }
 	    }
 
     	return $new_array;
 
     }
+
+	/**
+	 * Get all clients, including the ones from the partners
+	 * @param $aff_id
+	 *
+	 * @return array
+	 */
+    public static function getAllCustomersFromPartnerAndSubs($aff_id){
+
+	    global $wpdb;
+
+	    // Add to array
+	    $childeren_mysql = "";
+
+	    $sub = new SubAffiliate($aff_id);
+	    $childeren = $sub->getAllChildren();
+
+	    if($childeren != null) {
+		    $childeren = self::getAllIdsFromSubs( $childeren );
+		    $childeren[] = $aff_id;
+		    $childeren_mysql = join( "','", $childeren );
+	    }
+
+	    $query = $wpdb->get_results("SELECT affwp_customer_id FROM {$wpdb->prefix}affiliate_wp_customermeta WHERE meta_key='affiliate_id' AND meta_value IN ('{$childeren_mysql}')");
+	    $customers = array();
+
+	    if(count($wpdb->last_result) > 0){
+	    	foreach ($wpdb->last_result as $customer){
+			    $customers[] = affwp_get_customer( $customer->affwp_customer_id );
+		    }
+	    }
+
+	    return $customers;
+
+    }
+
+	/**
+	 * Check if is a client of partner or sub partner
+	 * @param $client
+	 * @param $affiliate
+	 *
+	 * @return bool
+	 */
+    public static function isClientOfPartnerOfSubPartner($client,$affiliate){
+
+	    global $wpdb;
+
+	    // Add to array
+	    $childeren_mysql = $affiliate;
+
+	    $sub = new SubAffiliate($affiliate);
+	    $childeren = $sub->getAllChildren();
+
+	    if($childeren != null) {
+		    $childeren = self::getAllIdsFromSubs( $childeren );
+		    $childeren_mysql = join( "','", $childeren );
+	    }
+
+	    $query = $wpdb->get_results("SELECT affwp_customer_id FROM {$wpdb->prefix}affiliate_wp_customermeta WHERE meta_key='affiliate_id' AND meta_value IN ('{$childeren_mysql}') AND affwp_customer_id='{$client}'");
+
+	    if(count($wpdb->last_result) > 0){
+	    	return true;
+	    }else{
+	    	return false;
+	    }
+
+    }
+
+    private static function getAllIdsFromSubs($subs){
+
+    	$return = array();
+
+    	foreach($subs as $s){
+    		$return[] = $s->getId();
+	    }
+
+    	return $return;
+
+    }
+
+	public static function getCustomerByUserId($user_id)
+	{
+
+		global $wpdb;
+		$query = $wpdb->get_row("SELECT customer_id FROM {$wpdb->prefix}affiliate_wp_customers WHERE user_id='" . $user_id . "'");
+
+		if (isset($query->customer_id)) {
+			return $query->customer_id;
+		}
+		return 0;
+	}
+
+	public static function getParentByCustomerId($customer_id)
+	{
+		global $wpdb;
+		$query = $wpdb->get_row("SELECT meta_value FROM {$wpdb->prefix}affiliate_wp_customermeta WHERE affwp_customer_id='" . $customer_id . "' AND meta_key='affiliate_id'");
+
+		if (isset($query->meta_value)) {
+			return $query->meta_value;
+		}
+		return 0;
+	}
+
 
 }

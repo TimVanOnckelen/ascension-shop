@@ -296,6 +296,8 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly ?>
 $sub = new SubAffiliate($this->partner_id);
 $totals = Helpers::getTotalsFromRefs($this->refferals);
 
+
+
 ?>
 	<table class="head container">
 		<tr class="underline">
@@ -328,7 +330,7 @@ $totals = Helpers::getTotalsFromRefs($this->refferals);
 	            echo get_user_meta($sub->getUserId(),"billing_postcode",true). ' '.get_user_meta($sub->getUserId(),"billing_city",true);
 	            ?><br />
 	            <?php
-	            echo get_user_meta($sub->getUserId(),"billing_country",true);
+	            echo WC()->countries->countries[get_user_meta($sub->getUserId(),"billing_country",true)];
 	            ?><br />
 	            <?php
 	            echo get_user_meta($sub->getUserId(),"billing_email",true);
@@ -345,7 +347,7 @@ $totals = Helpers::getTotalsFromRefs($this->refferals);
                 <table>
 
                         <tr class="invoice-date">
-                            <th><?php _e( 'Invoice Date:', 'ascension-shop' ); ?></th>
+                            <th><?php _e( 'Factuur datum:', 'ascension-shop' ); ?></th>
                             <td><?php echo date("d-m-Y",time()); ?></td>
                         </tr>
 
@@ -419,7 +421,7 @@ $totals = Helpers::getTotalsFromRefs($this->refferals);
 			echo get_user_meta($sub->getUserId(),"billing_postcode",true). ' '.get_user_meta($sub->getUserId(),"billing_city",true);
 			?><br />
 			<?php
-			echo get_user_meta($sub->getUserId(),"billing_country",true);
+			echo WC()->countries->countries[get_user_meta($sub->getUserId(),"billing_country",true)];
 			?><br />
 			<?php
 			echo get_user_meta($sub->getUserId(),"billing_email",true);
@@ -468,15 +470,14 @@ $totals = Helpers::getTotalsFromRefs($this->refferals);
         <th class="referral-client"><?php _e( 'Klant', 'affiliate-wp' ); ?></th>
         <th class="referral-percentage"><?php _e( 'Percentage', 'affiliate-wp' ); ?></th>
         <th class="referral-date"><?php _e( 'Datum', 'affiliate-wp' ); ?></th>
-        <th class="referral-date"><?php _e( 'Totaal bedrag ex btw', 'affiliate-wp' ); ?></th>
+        <th class="referral-date"><?php _e( 'Betaal datum', 'affiliate-wp' ); ?></th>
         <th class="referral-date"><?php _e( 'Totaal bedrag inc btw', 'affiliate-wp' ); ?></th>
+        <th class="referral-date"><?php _e( 'Totaal bedrag ex btw', 'affiliate-wp' ); ?></th>
         <th class="referral-amount"><?php _e( 'Commission', 'affiliate-wp' ); ?></th>
     </tr>
     </thead>
     <tbody>
 	<?php
-
-
 
     if ( $this->refferals ) :
 
@@ -528,6 +529,7 @@ $totals = Helpers::getTotalsFromRefs($this->refferals);
 
                 </td>
                 <td class="referral-date" data-th="<?php _e( 'Date', 'affiliate-wp' ); ?>"><?php echo esc_html( $referral->date_i18n( 'datetime' ) ); ?></td>
+                <td><?php echo date('d F Y H:i',strtotime(get_post_meta($referral->reference,"_paid_date",true))); ?></td>
 				<?php
 				/**
 				 * Fires within the table data of the dashboard referrals template.
@@ -547,7 +549,7 @@ $totals = Helpers::getTotalsFromRefs($this->refferals);
         </tr>
 
 	<?php endif; ?>
-    <tr><td><b><?php _e("Totaal","ascension-shop"); ?></b></td><td></td><td></td><td></td><td></td><td></td><td><?php echo affwp_currency_filter( affwp_format_amount($totals["total"])); ?></td></tr>
+    <tr><td><b><?php _e("Totaal","ascension-shop"); ?></b></td><td></td><td></td><td></td><td></td><td></td><td></td><td><?php echo affwp_currency_filter( affwp_format_amount($totals["total"])); ?></td></tr>
     </tbody>
 </table>
 </table>

@@ -3,9 +3,12 @@
     <input checked="checked" id="tab1" type="radio" name="pct" />
     <input id="tab2" type="radio" name="pct" />
     <input id="tab3" type="radio" name="pct" />
+    <input id="tab4" type="radio" name="pct" />
     <ul class="ascension-sub-menu">
         <li class="tab1"><label for="tab1"><?php _e("Bestellingen","ascension-shop") ?></label></li>
         <li class="tab2"><label for="tab2"><?php _e("Klanten","ascension-shop") ?></label></li>
+        <li class="tab3"><label for="tab3"><?php _e("Partners","ascension-shop") ?></label></li>
+        <li class="tab4"><label for="tab4"><?php _e("Partner Toevoegen","ascension-shop") ?></label></li>
     </ul>
     <section>
         <h4><?php _e("Je bent nationale manager voor:","ascension-shop"); ?><?php echo ' '.$this->lang[0]; ?></h4>
