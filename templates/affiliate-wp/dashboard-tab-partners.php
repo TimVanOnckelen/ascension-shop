@@ -15,7 +15,6 @@ $partners_amount = count($partners);
 
 <div id="affwp-affiliate-dashboard-lifetime-customers" class="printArea affwp-tab-content">
 
-    <h4><?php _e( 'Partners', 'ascension-shop' ); ?></h4>
     <p>
     <form method="GET" id="ascension-filters" >
         <input type="hidden" name="tab" value="partners" />

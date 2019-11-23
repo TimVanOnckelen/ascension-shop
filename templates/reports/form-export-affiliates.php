@@ -88,10 +88,17 @@ if(!isset($_GET["start-date"])){
                     <?php if($ref["status"] == "unpaid"){ ?>
                         <input type="hidden" name="status" value="paid" />
                         <input type="submit" class="button button-primary button-large" value="<?=__('Mark as paid')?>">
-                    <?php }else {?>
+                    <?php }elseif($ref["status"] == "paid") {?>
                         <input type="hidden" name="status" value="unpaid" />
                         <input type="submit" class="button button-primary button-large" value="<?=__('Mark as unpaid')?>">
-                    <?php }?>
+                    <?php }else{
+                       ?>
+                        <input type="hidden" name="status" value="paid" />
+                        <input type="submit" class="button button-primary button-large" value="<?=__('Mark all as paid')?>">
+                        <input type="hidden" name="status" value="unpaid" />
+                        <input type="submit" class="button button-primary button-large" value="<?=__('Mark all as unpaid')?>">
+                    <?php
+                    }?>
                 </form>
                 </p>
             </td>

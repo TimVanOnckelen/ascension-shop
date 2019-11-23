@@ -60,6 +60,12 @@ class TrackingCode_Email extends \WC_Email
         } else {
             $order_email = $this->object->get_billing_email();
         }
+
+        // Get order lang
+        $lang = get_post_meta($order_id,'wpml_language',true);
+        global $sitepress;
+        $sitepress->switch_lang($lang);
+
         $this->recipient = $order_email;
         if (!$this->is_enabled() || !$this->get_recipient()) {
             return;

@@ -53,6 +53,10 @@ class WoocommerceCheckOut
         add_filter('woocommerce_email_recipient_customer_pending_order', array($this, "sendEmailToParent"), 1, 2);
         add_filter('woocommerce_email_recipient_customer_on_hold_order', array($this, "sendEmailToParent"), 1, 2);
 
+        // prevent saving customer data on checkout.
+        add_filter('woocommerce_checkout_update_customer_data', array($this,'onlySaveWhenOwnOrder'),10,2 );
+        // add_filter('woocommerce_checkout_get_value','__return_empty_string',10);
+
 
     }
 
@@ -98,7 +102,7 @@ class WoocommerceCheckOut
 	        }
 
 	        $t = new TemplateEngine();
-            $customers = Helpers::getAllCustomersFromPartnerAndSubs($aff_id);
+            $customers = Helpers::getAllCustomersFromPartnerAndSubs($aff_id,true);
             usort($customers, function ($first, $second) {
                 return strcasecmp($first->first_name, $second->first_name);
             });
@@ -125,16 +129,21 @@ class WoocommerceCheckOut
 	    }
 
 	    $is_customer = Helpers::isClientOfPartnerOfSubPartner($custom_customer, $aff_id);
+        $parent_client = Helpers::getParentByCustomerId($custom_customer);
+        $parent_client = new SubAffiliate($parent_client);
 	    // get the customer id
 	    $custom_customer = $this->getUserId($custom_customer);
 
-	    if ($is_customer > 0) {
+	    $return = $custom_customer. " ".$is_customer. " ParentClient:". $parent_client->getId(). ' Aff:'.$aff_id;
+
+        if ($is_customer > 0 OR $parent_client->getId() == $aff_id) {
 
 		    if (isset($custom_customer) && is_numeric($custom_customer)) {
 			    return $custom_customer;
 		    }
 
 	    }
+
 	    // Nothing to do, just return
 	    return $customer_id;
 
@@ -381,7 +390,6 @@ class WoocommerceCheckOut
         return 0;
     }
 
-
     /**
      * CHange the user id of order is for customer
      * @param $user_id
@@ -484,8 +492,6 @@ class WoocommerceCheckOut
         $payer = get_post_meta($order->get_id(), '_ascension_order_payer', true);
         $parent_id = affwp_get_affiliate_user_id($parent_id);
 
-        error_log($payer);
-
         // Nothing to do, just go on :)
         if ($parent_id <= 0) {
             return $recipient;
@@ -502,6 +508,24 @@ class WoocommerceCheckOut
 
 
         return $parent->user_email;
+    }
+
+    public function onlySaveWhenOwnOrder($true,$instance){
+/*
+        $custom_customer = WC()->session->get('ascension_affiliate_client_id_order');
+        $custom_partner = WC()->session->get('ascension_affiliate_order_for_child_affiliate');
+
+        if($custom_partner > 0){
+            return false;
+        }
+
+        if($custom_customer > 0){
+            return false;
+        }
+
+
+        return true;*/
+    return false;
     }
 
 

@@ -2,8 +2,26 @@
 
     $(document).on("ready",function () {
 
-        $("#searchByPartner").select2({width:'100%'});
-        $(".searchByPartner").select2({width:'100%'});
+        $("#searchByPartner").select2({width:'100%',  allowClear: true});
+        $(".searchByPartner").select2({width:'100%',  allowClear: true});
+        $("#searchOrderByClient").select2({
+            ajax: {
+                url: getClients.url,
+                type : "GET",
+                beforeSend: function ( xhr ) {
+                    xhr.setRequestHeader( 'X-WP-Nonce', getClients.nonce );
+                },
+                processResults: function (data) {
+                    // Transforms the top-level key of the response object from 'items' to 'results'
+                    console.log(data);
+                    return {
+                        results: data.data
+                    };
+                },n
+                // Additional AJAX parameters go here; see the end of this chapter for the full code of this example
+            },
+            minimumInputLength: 1,
+        });
 
         $("body").on("click",".edit-user",function (e) {
 
@@ -30,15 +48,99 @@
 */
             $("#affwp-table").removeClass("affwp-table-responsive");
 
-           $(".printArea").printThis(
-               {
-                   importCSS: true,
-                   importStyle: true,
-                   debug: true
-               }
-           );
+            $(".printArea").printThis(
+                {
+                    importCSS: true,
+                    importStyle: true,
+                    debug: true
+                }
+            );
 
         });
+
+
+        let OrdersTable =  $(OrderArea.tableId).DataTable(
+            {
+                processing: true,
+                serverSide: true,
+                ordering: false,
+                ajax: {
+                    'url' : OrderArea.url,
+                    'type' : "GET",
+                    'beforeSend': function ( xhr ) {
+                        xhr.setRequestHeader( 'X-WP-Nonce', OrderArea.nonce );
+                    },
+                    "complete": function () {
+                        $("[name='_wp_http_referer']").val(OrderArea.referer);
+                    }
+                },
+                columns: [
+                    {"data": "id"},
+                    {"data": "date"},
+                    {"data": "status"},
+                    {"data" : "amount"},
+                    {"data": "client"},
+                    {"data": "partner"},
+                    {"data" : "actions"},
+
+                ],
+            }
+
+        );
+
+        OrdersTable.columns().every( function (index) {
+            var that = this;
+
+            if(index === 0) {
+
+                $("#order-id-search").on('keyup change', function () {
+
+                    theId = $(this).val();
+
+                        if (that.search() !== this.value) {
+                            that
+                                .search(theId)
+                                .draw();
+                        }
+
+                });
+            }
+
+            if(index === 1) {
+                $("#orders-to,#orders-from").on('change', function () {
+
+                    var from = $("#orders-from").val();
+                    var to = $("#orders-to").val();
+
+                    if(from !== '' &&  to !== ''){
+
+
+                        var search = from+'...'+to;
+
+                        if (that.search() !== this.value) {
+                            that
+                                .search(search)
+                                .draw();
+                        }
+                    }
+                });
+            }
+
+
+            if(index === 4) {
+                $("#searchOrderByClient").on('change', function () {
+
+                    if (that.search() !== this.value) {
+                        that
+                            .search(this.value)
+                            .draw();
+                    }
+                });
+            }
+
+        });
+
+
 
         let theTable =  $(partnerArea.tableId).DataTable(
             {
@@ -111,7 +213,7 @@
                         var info = theTable.page.info();
 
                         theTable.ajax.reload(function () {
-                           theTable.page(info.page+1);
+                            theTable.page(info.page+1);
                         });
                     }else{
                         // Legacy support for older tables
@@ -148,8 +250,8 @@
                         confirmButtonText: 'Ok'
                     });
 
-                        // Legacy support for older tables
-                        location.reload();
+                    // Legacy support for older tables
+                    location.reload();
                 }
             });
 

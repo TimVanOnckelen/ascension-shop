@@ -1,3 +1,16 @@
+v1.0.11
+**************
+- [fix] Customers where not set right on order
+- [fix] Adresses do not auto update on checkout anymore
+- [new] Order managemend for NM updated
+- [new] Restyled nm & partner menu
+- [new] Added orders from clients to partner menu
+
+v1.0.10
+**************
+- [new] Removed unessasery woocommerce emails
+- [new] Added reminder email
+
 v1.0.9
 **************
 - [new] You can now place an order for anyone beneath you as a partner

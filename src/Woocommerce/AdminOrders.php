@@ -83,14 +83,24 @@ class AdminOrders
      */
     public function addShopLangToUser($user)
     {
-        // Only show if current user can edit
+
+	    if (!current_user_can('administrator')) return;
+
+	    // Only show if current user can edit
         if (!current_user_can('edit_user', $user->ID)) return;
 
         if (!is_admin()) return;
 
         // Get admin langs
         $lang = get_user_meta($user->ID, 'as_user_ln');
-        $lang = $lang[0];
+
+        if($lang != false) {
+	        $lang = $lang[0];
+        }else{
+            $lang = array();
+        }
+
+
 
         // Get all available langs
         $all_website_langs = icl_get_languages();

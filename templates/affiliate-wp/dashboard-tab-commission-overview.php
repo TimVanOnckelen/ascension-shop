@@ -34,8 +34,6 @@ if(!isset($_GET["status"])){
 
 <div id="affwp-affiliate-dashboard-referrals" class="affwp-tab-content printArea">
 
-    <h4><?php _e( 'Referrals', 'affiliate-wp' ); ?></h4>
-
 	<?php
 
     $filter_Status = array("paid","unpaid");
@@ -174,7 +172,7 @@ if(!isset($_GET["status"])){
                 }
 
                 ?>
-                <tr>
+                <tr style="background-color:#fff;">
                     <td class="ascension-order-info" data-th="<?php _e( 'Order', 'affiliate-wp' ); ?>">
 
                         <a href="#" class="ascension-order-details-hover"># <?php echo $referral->reference; ?></a>

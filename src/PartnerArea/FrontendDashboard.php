@@ -89,12 +89,13 @@ class FrontendDashboard
 		wp_enqueue_style("dataTables","//cdn.datatables.net/1.10.20/css/jquery.dataTables.min.css");
 		wp_enqueue_style("ascension-info-css", XE_ASCENSION_SHOP_PLUGIN_DIR . "/assets/css/refferal-order-info.min.css",null,"1.0.1.7");
 		wp_enqueue_script("sweetAlert","https://cdn.jsdelivr.net/npm/sweetalert2@8");
-		wp_enqueue_script("partnerAreaFunctions",XE_ASCENSION_SHOP_PLUGIN_DIR . "/assets/js/partnerAreaFunctions.min.js",array("jquery","sweetAlert"),'1.1.13');
+		wp_enqueue_script("partnerAreaFunctions",XE_ASCENSION_SHOP_PLUGIN_DIR . "/assets/js/partnerAreaFunctions.min.js",array("jquery","sweetAlert"),'1.1.29');
+
 
 
 		unset($tabs["referrals"]);
-	    unset($tabs["lifetime-customers"]);
-        unset($tabs["stats"]);
+		unset($tabs["lifetime-customers"]);
+		unset($tabs["stats"]);
 		unset($tabs["payouts"]);
 		unset($tabs["creatives"]);
 		unset($tabs["settings"]);
@@ -107,14 +108,14 @@ class FrontendDashboard
 		$tabs["clients-overview"] = __("Klanten", "ascension-shop");
 		$tabs["add-client"] = __("Nieuwe klant aanmaken", "ascension-shop");
 		$tabs["commission-overview"] = __("Commissies", "ascension-shop");
+		$tabs["orders"] = __("Bestellingen");
 		$tabs["partners"] = __("Partners", "ascension-shop");
-        $tabs["urls"] = __("Partner URLs");
+		$tabs["urls"] = __("Partner URLs");
 		$tabs["visits"] = __("Bezoeken");
 
 		if(ICL_LANGUAGE_CODE=="de") {
 			$tabs["events"] = __( "Evenementen", "ascension-shop" );
 		}
-
 
 		return $tabs;
 	}

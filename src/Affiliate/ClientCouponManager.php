@@ -29,7 +29,8 @@ class ClientCouponManager
 
 	    add_action('edit_user_profile_update', array($this, "saveClientDiscount"),10,1);
 	    add_action('edit_user_profile_update', array($this, "saveClientPartner"),10,1);
-
+	    add_action('personal_options_update', array($this, "saveClientDiscount"),10,1);
+	    add_action('personal_options_update',array($this, "saveClientPartner"),10,1);
     }
 
 
@@ -185,23 +186,39 @@ class ClientCouponManager
     }
 
     public function editClientDiscount($user){
+
 	    // Only show if current user can edit
-	    if (!current_user_can('edit_user', $user->ID)) return;
+	    if (!current_user_can('administrator')) return;
 
 	    if (!is_admin()) return;
+
 
 	    $customer_id = $this->getCustomerByUserId($user->ID);
 
 	    if($customer_id > 0){
 	        $parent_id = $this->getParentByCustomerId($customer_id);
+        }else{
+	        $parent_id = 0;
         }
 
 	    $all_affiliates = affiliate_wp()->affiliates->get_affiliates(array('number' => 0,'orderby'=>'name','order'=>'ASC'));
 
-
+	    $sub = new SubAffiliate($user->ID);
 
 	    ?>
 		<h2><?php _e("Klant instellingen - Partners"); ?></h2>
+        <?php
+
+	    if($sub->isSub() === true && $sub->getStatus() === 1){
+		    _e("This user is an active partner. You cannot make a partner be a client.");
+		    return;
+	    }
+
+	    if($sub->isSub() === true && $sub->getStatus() !== 1){
+		    _e("This user is an INACTIVE partner.");
+	    }
+
+        ?>
 	    <table class="form-table">
 		    <tr>
 			    <th><label for="as_user_ln"><?php _e("Klanten korting (%)") ?></label></th>
@@ -244,22 +261,27 @@ class ClientCouponManager
 
 	public function saveClientPartner($user_id){
 
-		if(isset($_REQUEST["ascension_shop_customer_of"])){
-
 
 			$customer_id = $this->getCustomerByUserId($user_id);
-
 
 			if($customer_id > 0) {
 
 			    $partner_id = absint($_REQUEST["ascension_shop_customer_of"]);
-
 				global $wpdb;
-				$query = $wpdb->query("UPDATE {$wpdb->prefix}affiliate_wp_customermeta SET meta_value='".$partner_id."' WHERE affwp_customer_id='" . $customer_id . "' AND meta_key='affiliate_id'");
+
+
+			    if($partner_id < 0){
+				    $query = $wpdb->query("DELETE FROM {$wpdb->prefix}affiliate_wp_customermeta WHERE affwp_customer_id='" . $customer_id . "' AND meta_key='affiliate_id'");
+
+			    }else{
+				    $query = $wpdb->query("UPDATE {$wpdb->prefix}affiliate_wp_customermeta SET meta_value='".$partner_id."' WHERE affwp_customer_id='" . $customer_id . "' AND meta_key='affiliate_id'");
+
+			    }
+
 
 
 			}else{
-				$customer = affwp_add_customer(array(
+				affwp_add_customer(array(
 					'first_name' => $_REQUEST["first_name"],
 					'last_name' => $_REQUEST["last_name"],
 					'email' => $_REQUEST["email"],
@@ -268,7 +290,6 @@ class ClientCouponManager
 					'date_created' => date()
 				));
             }
-		}
 
 
     }
@@ -276,12 +297,14 @@ class ClientCouponManager
 	private function getCustomerByUserId($user_id)
 	{
 
-		global $wpdb;
-		$query = $wpdb->get_row("SELECT customer_id FROM {$wpdb->prefix}affiliate_wp_customers WHERE user_id='" . $user_id . "'");
+	    if($user_id > 0) {
+		    global $wpdb;
+		    $query = $wpdb->get_row( "SELECT customer_id FROM {$wpdb->prefix}affiliate_wp_customers WHERE user_id='" . $user_id . "'" );
 
-		if (isset($query->customer_id)) {
-			return $query->customer_id;
-		}
+		    if ( isset( $query->customer_id ) ) {
+			    return $query->customer_id;
+		    }
+	    }
 		return 0;
 	}
 

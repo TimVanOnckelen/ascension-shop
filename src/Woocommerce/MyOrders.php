@@ -69,8 +69,9 @@ class MyOrders
             return $actions;
         }
 
+
         // Nothing to do, just go on :)
-        if ($parent_id <= 0 OR $payer == 1) {
+        if ($parent_id <= 0 OR $payer === true) {
             return $actions;
         }
 
@@ -138,9 +139,10 @@ class MyOrders
     {
 
         // User who can edit always have access to posts
-        if(current_user_can("edit_pages")){
+        if(current_user_can("manage_woocommerce")){
             return true;
         }
+
 
         $order = new \WC_Order($order_ids[0]);
         // Get order maker

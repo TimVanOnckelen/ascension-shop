@@ -35,10 +35,6 @@ class UserOptions
     public function save_affiliate($data)
     {
 
-        if (!isset($data['parent_affiliate_id']) && isset($data['xe_ascension_custom_rate'])) {
-            return false;
-        }
-
         if (!is_admin()) {
             return false;
         }

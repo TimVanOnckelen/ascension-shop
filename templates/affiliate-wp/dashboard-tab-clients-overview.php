@@ -10,8 +10,7 @@ $sub = new SubAffiliate($affiliate_id);
 ?>
 
 <div id="affwp-affiliate-dashboard-lifetime-customers" class="affwp-tab-content">
-    <h4><?php _e( 'Klanten', 'ascension-shop' ); ?></h4>
-    <p><a href="<?php echo $_SERVER['REQUEST_URI'].'&generateReport=clients';?>"><button><?php _e("Download als XLS","ascension-shop"); ?></button></a></p>
+    <p><a href="<?php echo $_SERVER['REQUEST_URI'].'?generateReport=clients';?>"><button><?php _e("Download als XLS","ascension-shop"); ?></button></a></p>
     <p>
         <a href="?tab=add-client"><button><?php _e("Nieuwe klant aanmaken"); ?></button></a>
     </p>

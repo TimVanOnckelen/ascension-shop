@@ -31,6 +31,7 @@ use AscensionShop\Shipping\ConsoleApi;
 use AscensionShop\Shipping\WC_Custom_Email;
 use AscensionShop\Woocommerce\AdminEmails;
 use AscensionShop\Woocommerce\AdminOrders;
+use AscensionShop\Woocommerce\Custom_WC_emails;
 use AscensionShop\Woocommerce\MyOrders;
 use AscensionShop\Woocommerce\Optimalizations;
 use AscensionShop\Woocommerce\OrderHooks;
@@ -149,6 +150,9 @@ class Main
 	     * National Manager Frontend
 	     */
         new Frontend();
+
+        // Custom emails from woocommerce
+        new Custom_WC_emails();
     }
 
 

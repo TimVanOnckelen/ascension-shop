@@ -4,7 +4,9 @@
 namespace AscensionShop\Reports;
 
 
+use AscensionShop\Affiliate\Helpers;
 use AscensionShop\Affiliate\SubAffiliate;
+use AscensionShop\NationalManager\NationalManager;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 
@@ -34,12 +36,32 @@ class FrontendReports {
 		}
 	}
 
+	private function getAllPartners(  ) {
+
+		$return_array = array();
+
+		$partners = affiliate_wp()->affiliates->get_affiliates(
+			array( 'number'  => -1,
+			       'orderby' => 'name',
+			       'order'   => 'ASC' ) );
+		foreach ($partners as $p){
+			$return_array[] = new SubAffiliate($p->affiliate_id);
+		}
+
+		return $return_array;
+	}
 
 	private function generatePartnerOverview(){
 
 		$affiliate_id = affwp_get_affiliate_id();
-		$sub          = new SubAffiliate($affiliate_id);
-		$partners     = $sub->getAllChildren();
+
+		if(!NationalManager::isNationalManger(get_current_user_id())) {
+			$sub      = new SubAffiliate( $affiliate_id );
+			$partners = $sub->getAllChildren();
+		}else{
+			$partners = $this->getAllPartners();
+		}
+
 		$partners_amount = count($partners);
 
 		$data = array();
@@ -48,7 +70,7 @@ class FrontendReports {
 		foreach ($partners as $partner){
 			$new = array();
 			$new["id"] = $partner->getId();
-			$new["name"] = $partner->getName();
+			$new["name"] = get_user_meta( $partner->getUserId(), 'first_name', true ). ' '.get_user_meta( $partner->getUserId(), 'last_name', true );;
 			$new["email"] = $partner->getEmail();
 			$new["adress"] = get_user_meta( $partner->getUserId(), 'billing_address_1', true );
 			$new["postcode"] = get_user_meta( $partner->getUserId(), 'billing_postcode', true );
@@ -111,12 +133,40 @@ class FrontendReports {
 	private function generateClientOverview(){
 
 		$affiliate_id = affwp_get_affiliate_id();
-		$customers    = affiliate_wp_lifetime_commissions()->integrations->get_customers_for_affiliate( $affiliate_id );
+        $customers = Helpers::getAllCustomersFromPartnerAndSubs($affiliate_id);
 
-		$data = array();
+        $include = array();
+
+        if(count($customers)> 0) {
+            // $include[] = get_current_user_id();
+            foreach ( $customers as $c ) {
+                $include[] = $c->user_id;
+            }
+        }else{
+            $include[] = 0;
+        }
+
+
+        // National manager can export all users
+        if(NationalManager::isNationalManger(get_current_user_id()) == true){
+            $include = false;
+        }
+
+        $users = new \WP_User_Query(
+                array('include' => $include,
+                    'number' => -1)
+        );
+        $users_result = $users->get_results();
+
+
+        $data = array();
 		$data[0] = array("id" => __("ID", "woocommerce"), "first_name" => __("Voornaam", "woocommerce"), "last_name" => __("Achternaam", "woocommerce"),"email" => __("Email", "woocommerce"),"adress" => __("Adress", "woocommerce"), "postcode" => __("Postcode", "woocommerce") ,"phone"=> __("Telefoon"),"discount" => __("Korting"));
 
-		foreach ($customers as $customer){
+		foreach ($users_result as $customer){
+
+		    $customer = Helpers::getCustomerByUserId($customer->ID);
+		    $customer = affwp_get_customer($customer);
+
 			$new = array();
 			$new["id"] = $customer->customer_id;
 			$new["first_name"] = $customer->first_name;

@@ -1,12 +1,11 @@
-<div class="tab1">
-    <?php
-    $langs = '';
-        foreach ($this->lang as $l){
-            $langs .= $l. ' ';
-        }
-    ?>
-    <p><?php printf(__("Alle orders voor de %s shop","ascenion-shop"),$langs); ?><br />
-	    <?php _e("Je kan alle orders filteren op naam, id, status of bedrag.","ascenion-shop"); ?></p>
+<?php
+
+use AscensionShop\NationalManager\Frontend;
+// Get partner id
+$partner = affwp_get_affiliate_id();
+$clients = Frontend::loadClientsFromGivenPartner($partner);
+?>
+<div class="affwp-tab-content">
     <table id="all-orders" class="affwp-table affwp-table-responsive">
         <thead>
         <tr>
@@ -16,11 +15,12 @@
             <th></th>
             <th>
                 <select id="searchOrderByClient" class="searchByPartner" >
-                    <option value="" selected="selected" ><?php _e("Alle klanten","ascension-shop") ?></option>
-		            <?php foreach ($this->clients as $client) : ?>
-			            <?php $user_data = get_userdata($client->ID);?>
+                    <option value=""><?php _e("Alle klanten","ascension-shop") ?></option>
+					<?php foreach ($clients as $client) : ?>
+                        <?php $client = get_user_by('ID',$client); ?>
+						<?php $user_data = get_userdata($client->ID);?>
                         <option value="<?php echo $client->ID ?>"><?php echo $user_data->last_name. ' '.$user_data->first_name. ' #'.$client->ID; ?></option>
-		            <?php endforeach; ?>
+					<?php endforeach; ?>
                 </select>
             </th>
             <th></th>
@@ -36,7 +36,7 @@
             <th><?php _e("Acties","ascension-shop") ?></th>
         </tr>
         </thead>
-    <tbody>
-    </tbody>
-</table>
+        <tbody>
+        </tbody>
+    </table>
 </div>

@@ -25,7 +25,7 @@ class CreditNote {
 	private $date_to;
 	private $template = '';
 	private $settings = '';
-	private $ref_status = "unpaid";
+	private $ref_status = array("paid","unpaid");
 
 	/**
 	 * Document slug.
@@ -64,7 +64,7 @@ class CreditNote {
 		$paid_status = get_user_meta($user_id,$key,true);
 
 		if($paid_status == "paid"){
-			$this->ref_status = "paid";
+			$this->ref_status = array("paid","unpaid");
 		}
 
 	}
@@ -100,7 +100,7 @@ class CreditNote {
 	private function getCommissions(){
 
 		// Check if we need to get paid or unpaid items from this creditnote
-		$this->getPaidStatus();
+		// $this->getPaidStatus();
 
 
 		/** @var \AffWP\Referral[] $referrals */
@@ -117,7 +117,7 @@ class CreditNote {
 		foreach ($referrals as $id => $ref){
 			$date_paid = get_post_meta($ref->reference,"_paid_date",true);
 			$date_paid = strtotime($date_paid);
-			$end_date = strtotime($this->date_to.' 00:00');
+			$end_date = strtotime($this->date_to.' 23:59');
 			$start_date = strtotime($this->date_from.' 00:00');
 
 			if($date_paid <= $end_date && $date_paid >= $start_date){

@@ -46,9 +46,19 @@ class DiscountImporter
 
 
                 if (email_exists($user["Email"])) {
-                    $user_id = get_user_by("email", $user["Email"]);
-                    $user_id = $user_id->ID;
+                    $the_user = get_user_by("email", $user["Email"]);
+                    $user_id = $the_user->ID;
 
+                    if(isset($user["voornaam"]) && $the_user->first_name == ''){
+	                    update_user_meta($user_id,"first_name",$user["voornaam"]);
+	                    update_user_meta($user_id,"last_name",$user["achternaam"]);
+	                    update_user_meta($user_id,"first_name",$user["voornaam"].$user["achternaam"]);
+	                    update_user_meta($user_id,"billing_first_name",$user["voornaam"]);
+	                    update_user_meta($user_id,"billing_last_name",$user["achternaam"]);
+	                    echo "Set user " . $user_id;
+                    }
+
+                    /*
                     if (isset($user["adres"])) {
                         // Set discount
                         echo "Set user " . $user_id . " adress to " . $user["adres"];
@@ -62,6 +72,8 @@ class DiscountImporter
                     } else {
                         print_r($user);
                     }
+                    */
+
                     $amount_of_exsisting++;
                     continue;
                 }

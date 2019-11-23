@@ -25,18 +25,6 @@
 }
 
 
-ul.ascension-sub-menu {
-  margin: 0;
-  margin-bottom: 10px;
-  padding: 0;
-  border-bottom: 1px solid #c0c0c0;
-  li {
-    list-style: none;
-    display: inline-block;
-    margin: 10px;
-    padding: 10px;
-  }
-}
 .dataTables_wrapper .dataTables_filter {
   margin-right: 51px;
 }
@@ -53,3 +41,25 @@ ul.ascension-sub-menu {
   display: block;
 }
 table.wpem-responsive-table-wrapper tbody tr td .wpem-dboard-event-action .wpem-dboard-event-act-btn a.event-dashboard-action-approve::before { content: "\eab4"; }
+
+#affwp-affiliate-dashboard #affwp-affiliate-dashboard-tabs,ul.ascension-sub-menu {
+  background-color: #830051;
+  li {
+    padding: 13px;
+    font-size: 0.8em;
+    a,label {
+      color:#fff;
+    }
+    &.active {
+      background-color: #fff;
+
+      a,label {
+        font-weight: bolder;
+        color: #830051;
+      }
+    }
+  }
+}
+#all-orders_filter {
+  display: none;
+}

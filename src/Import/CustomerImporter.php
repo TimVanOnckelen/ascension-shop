@@ -3,17 +3,52 @@
 
 namespace AscensionShop\Import;
 
-
-use mysql_xdevapi\Exception;
-
 class CustomerImporter
 {
 
     public function __construct()
     {
 
-        add_action("init", array($this, "doCustomerImportDry"));
+        add_action("init", array($this, "doCustomerDeleteEmptyDry"));
 
+    }
+
+    public function doCustomerDeleteEmptyDry(){
+
+	    if (is_admin() && isset($_REQUEST["ascension-customer-input"])) {
+
+		    require_once(ABSPATH.'wp-admin/includes/user.php' );
+
+
+		    $args = array(
+			    'date_query'    => array(
+				    array(
+					    'after'     => '2019-05-13 00:00:00',
+				    ),
+			    ),
+			    'meta_query' => array(
+
+				    'relation' => 'OR',
+				    array(
+					    'key' => 'first_name',
+					    'value' => '',
+					    'compare' => '=',
+				    ),
+				    array(
+					    'key' => 'first_name',
+					    'value' => '',
+					    'compare' => 'NOT EXISTS',
+				    )
+			    ),
+		    );
+		    $users = get_users( $args );
+
+		    foreach ($users as $u){
+			    echo '#'.$u->ID.''.$u->display_name.' deleted <br />';
+			    wp_delete_user( $u->ID );
+		    }
+		    exit;
+	    }
     }
 
     public function doCustomerImportDry()

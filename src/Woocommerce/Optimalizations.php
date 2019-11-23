@@ -12,15 +12,16 @@ class Optimalizations
 
         add_filter('woocommerce_variable_sale_price_html', array($this, "disablePriceRange"), 10, 2);
         add_filter('woocommerce_variable_price_html', array($this, "disablePriceRange"), 10, 2);
-        add_filter('woo_discount_rules_remove_event_woocommerce_before_calculate_totals', array($this, 'woo_discount_rules_remove_event_woocommerce_before_calculate_totals_method'));
-        add_filter('woo_discount_rules_has_price_override', array($this, 'woo_discount_rules_has_price_override_method'), 10, 2);
-        add_filter('woo_discount_rules_exclude_woocommerce_bundled_item', array($this, 'woo_discount_rules_exclude_woocommerce_bundled_item_method'), 10, 2);
+
 
         // edit user vat
         add_action('show_user_profile', array($this, "editVat"));
         add_action('edit_user_profile', array($this, "editVat"));
         add_action('personal_options_update', array($this, "saveVat"));
         add_action('edit_user_profile_update', array($this, "saveVat"));
+
+
+
 
     }
 

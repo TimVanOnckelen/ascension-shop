@@ -18,6 +18,8 @@ class AdminEmails
 
         // Get lang of order
         $lang = get_post_meta($order->get_id(), "wpml_language", true);
+        global $sitepress;
+        $sitepress->switch_lang($lang);
 
         $temp_recipient = $this->getAdminsEmailsFromLang($lang);
 

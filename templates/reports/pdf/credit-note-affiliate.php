@@ -377,9 +377,19 @@ $totals = Helpers::getTotalsFromRefs($this->refferals);
         <td><?php _e("Commissiefactuur","acension-shop"); ?> <?php echo ' '.$this->date_from. ' - '.$this->date_to; ?></td>
         <td><?php echo affwp_currency_filter( affwp_format_amount($totals["total"])); ?></td>
     </tr>
+    <?php
+    if($totals["paid"] > 0){
+        ?>
+        <tr>
+            <td><?php _e("Reeds uitbetaald","acension-shop"); ?> <?php echo ' '.$this->date_from. ' - '.$this->date_to; ?></td>
+            <td> - <?php echo affwp_currency_filter( affwp_format_amount($totals["paid"])); ?></td>
+        </tr>
+    <?php
+    }
+    ?>
     <tr>
         <td style="text-align: right;"><b><?php _e("Creditfactuur","acension-shop"); ?></b></td>
-        <td><?php echo affwp_currency_filter( affwp_format_amount($totals["total"])); ?></td>
+        <td><?php echo affwp_currency_filter( affwp_format_amount($totals["unpaid"])); ?></td>
     </tr>
     </tbody>
 </table>

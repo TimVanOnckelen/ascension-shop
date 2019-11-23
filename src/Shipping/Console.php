@@ -38,7 +38,7 @@ class Console
             'woocommerce',
             'Shipping Console',
             'Shipping Console',
-            'manage_options',
+            'manage_woocommerce',
             'ascension-shop-shipping-console',
             array($this, 'loadConsole')
         );
@@ -88,7 +88,8 @@ class Console
             array(
                 "_store_manager_ln" => $current_lang,
                 "as-tracking-status" => $status,
-                "status" => $extra
+                "status" => $extra,
+                "limit" => -1
             )
         );
 

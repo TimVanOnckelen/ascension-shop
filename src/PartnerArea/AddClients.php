@@ -303,6 +303,11 @@ class AddClients
 					"last_name" => $_POST["lastname"],
 				));
 
+				// Remove as client!
+				global $wpdb;
+				$query = $wpdb->query( "DELETE FROM {$wpdb->prefix}affiliate_wp_customermeta WHERE affwp_customer_id='" . $customer_id . "'" );
+
+
 
 			}else{
 				die("Not a valid nonce");

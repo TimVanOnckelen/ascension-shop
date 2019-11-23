@@ -251,10 +251,14 @@ class Helpers
 	    $user_rate = $sub->getUserRate();
 	    $min = '';
 	    $return_rate = $user_rate;
-	    $total = $order->get_subtotal();
-	    $amount = round( $referral->amount, 2 );
-	    $amount_check = round( $user_rate * ( $total / 100 ) );
+	    $total = round($order->get_subtotal() - $order->get_discount_total(),2);
+	    $amount = $referral->amount;
+	    $amount_check =  $user_rate * ( $total / 100 );
+		$extra = '';
 
+	    if(user_can(get_current_user_id(),"administrator")){
+	    	// $extra = 'ONLY TESTING - ONLY ADMINS SEE THIS Total:'.$total.' Amount:'.$amount . ' amount-check:'.$amount_check. ' ORDER ID ';
+	    }
 
 	    /**
 	     * Check if there is a new rate
@@ -262,15 +266,20 @@ class Helpers
 	    if ( $amount_check != $amount ) {
 		    $min            = $amount_check - $amount;
 		    $min_percentage = round( 100 * ( $min / $total ), 0 );
+
 		    if ( $min_percentage > $user_rate ) {
 			    $min_percentage = $user_rate;
+		    }elseif($min_percentage < 0){
+		    	$min_percentage = 0;
+
 		    }
+
 		    $min      = ' - ' . $min_percentage . '%';
 		    $new_rate = $user_rate - $min_percentage;
 		    $min      .= ' = ' . $new_rate . '%';
 	    }
 
-	    return  $user_rate . '%' . $min;
+	    return  $user_rate . '%' . $min.$extra;
     }
 
 	/**
@@ -291,7 +300,7 @@ class Helpers
 			    $date_paid  = get_post_meta( $ref->reference, "_paid_date", true );
 			    $date_paid  = strtotime( $date_paid );
 			    $start_date = strtotime( $date_from . ' 00:00' );
-			    $end_date   = strtotime( $date_to . ' 00:00' );
+			    $end_date   = strtotime( $date_to . ' 23:59:59' );
 
 
 			    if ( $date_paid > $end_date OR $date_paid < $start_date ) {
@@ -328,7 +337,7 @@ class Helpers
 	 *
 	 * @return array
 	 */
-    public static function getAllCustomersFromPartnerAndSubs($aff_id){
+    public static function getAllCustomersFromPartnerAndSubs($aff_id,$addPartners = false){
 
 	    global $wpdb;
 
@@ -342,6 +351,9 @@ class Helpers
 		    $childeren = self::getAllIdsFromSubs( $childeren );
 		    $childeren[] = $aff_id;
 		    $childeren_mysql = join( "','", $childeren );
+	    }else{
+	    	// No subs, so only add current partner
+		    $childeren_mysql = $aff_id;
 	    }
 
 	    $query = $wpdb->get_results("SELECT affwp_customer_id FROM {$wpdb->prefix}affiliate_wp_customermeta WHERE meta_key='affiliate_id' AND meta_value IN ('{$childeren_mysql}')");
@@ -351,6 +363,25 @@ class Helpers
 	    	foreach ($wpdb->last_result as $customer){
 			    $customers[] = affwp_get_customer( $customer->affwp_customer_id );
 		    }
+	    }
+
+	    // Add partners if needed
+	    if($addPartners == true){
+
+	    	if($childeren != null){
+
+	    		foreach ($childeren as $c){
+
+	    			if($c == $aff_id){
+	    				continue;
+				    }
+
+					$s = new SubAffiliate($c);
+					$customer_id = Helpers::getCustomerByUserId($s->getUserId());
+				    $customers[] = affwp_get_customer( $customer_id);
+			    }
+		    }
+
 	    }
 
 	    return $customers;
