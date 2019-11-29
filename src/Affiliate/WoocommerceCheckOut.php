@@ -10,6 +10,7 @@ namespace AscensionShop\Affiliate;
 
 
 use AscensionShop\Lib\TemplateEngine;
+use AscensionShop\NationalManager\NationalManager;
 
 class WoocommerceCheckOut
 {
@@ -66,9 +67,9 @@ class WoocommerceCheckOut
 
         $aff_id = affwp_get_affiliate_id();
 
-        // Load global js & css
 	    wp_enqueue_script("select2","https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.11/js/select2.min.js");
-		wp_enqueue_style("select2","https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.11/css/select2.min.css");
+	    wp_enqueue_style("select2","https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.11/css/select2.min.css");
+
 
         // Only load on checkout as affiliate
         if (is_checkout() && $aff_id > 0) {
@@ -128,21 +129,31 @@ class WoocommerceCheckOut
 		    return $customer_id;
 	    }
 
+	    // Is a customer?
 	    $is_customer = Helpers::isClientOfPartnerOfSubPartner($custom_customer, $aff_id);
-        $parent_client = Helpers::getParentByCustomerId($custom_customer);
-        $parent_client = new SubAffiliate($parent_client);
-	    // get the customer id
+
+        // get the customer id
 	    $custom_customer = $this->getUserId($custom_customer);
 
-	    $return = $custom_customer. " ".$is_customer. " ParentClient:". $parent_client->getId(). ' Aff:'.$aff_id;
-
-        if ($is_customer > 0 OR $parent_client->getId() == $aff_id) {
+	    // User is customer of current partner, or of sub parner
+        if ($is_customer > 0) {
 
 		    if (isset($custom_customer) && is_numeric($custom_customer)) {
 			    return $custom_customer;
 		    }
 
-	    }
+	    }else{
+        	// Not a customer of, maybe a partner?
+			$poss_partner = affwp_get_affiliate_id($custom_customer);
+			// Is a partner, but is it a sub of current partner?
+			if($poss_partner > 0){
+				$current_partner = new SubAffiliate($aff_id);
+				if($current_partner->isSubAffiliateOf($poss_partner) === true){
+					// Is a sub partner of current partner
+					return $custom_customer;
+				}
+			}
+        }
 
 	    // Nothing to do, just return
 	    return $customer_id;
@@ -167,6 +178,8 @@ class WoocommerceCheckOut
 
         // Woocommerce fix in REST
         $this->check_prerequisites();
+
+	    WC()->session->set('ascension_order_rate',0);
 
         // Only do if user is customer
         if ($is_customer > 0) {
@@ -228,7 +241,7 @@ class WoocommerceCheckOut
 
 	    wc_clear_notices();
 
-	    if($other_partner > 0 && $who_pays == "false"){
+	    if($other_partner > 0 && $who_pays !== 'true'){
 		    $aff_id = affwp_get_affiliate_id();
 
 	    	$other_partner = affwp_get_affiliate_id($other_partner);
@@ -404,7 +417,7 @@ class WoocommerceCheckOut
 	    $who_pays = WC()->session->get('ascension_affiliate_who_pays_order');
 
 	    // If current user pays, return he's id or from the custom partner
-	    if($who_pays == "false"){
+	    if($who_pays !== "true"){
 	    	if($custom_partner != '' && $custom_partner > 0){
 	    		return $custom_partner;
 		    }else{
@@ -428,8 +441,11 @@ class WoocommerceCheckOut
      */
     public function addGateway($gateways)
     {
+	    $gateways[] = 'AscensionShop\Woocommerce\CashGateway';
         $gateways[] = 'AscensionShop\Woocommerce\CustomerPayGateway';
-        return $gateways;
+
+
+	    return $gateways;
     }
 
     /**
@@ -456,17 +472,29 @@ class WoocommerceCheckOut
         $custom_customer = WC()->session->get('ascension_affiliate_client_id_order');
         $who_pays = WC()->session->get('ascension_affiliate_who_pays_order');
 
-        // error_log(json_encode($available_gateways));
+
+		// Add customer payed cash
+        if($custom_customer > 0) {
+	        // Only give national manger to pay cash
+	        if ( ! NationalManager::isNationalManger( get_current_user_id() ) ) {
+		        unset( $available_gateways["ascension_cash_gateway"] );
+	        } else {
+		        $available_gateways["ascension_cash_gateway"]->title = __( "Klant betaalde cash", "ascension-shop" );
+	        }
+        }else{
+	        unset( $available_gateways["ascension_cash_gateway"] );
+        }
+
 
         // Unset every gateway expect the custom customer one
-        if ($who_pays === true && $custom_customer !== false) {
+        if ($who_pays === 'true') {
             foreach ($available_gateways as $key => $data) {
-                if ($key != "ascension_customer_gateway" && $key != "mollie_wc_gateway_banktransfer") {
+                if ($key != "ascension_customer_gateway" && $key != "mollie_wc_gateway_banktransfer" && $key != "ascension_cash_gateway") {
+
                     unset($available_gateways[$key]);
                 }
                 if ($key == "ascension_customer_gateway") {
                     $available_gateways[$key]->title = __("Klant logt in en betaald zelf", "ascension-shop");
-                    //error_log(json_encode($available_gateways[$key]));
                 }
             }
 

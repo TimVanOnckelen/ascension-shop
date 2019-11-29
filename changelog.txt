@@ -1,3 +1,11 @@
+v1.1
+**************
+- [new] updated commission overview on partner side
+- [new] updated change edit user on partner area
+- [fix] Fees are now translateable
+- [new] Add cash gateway for NM
+- [fix] Lots of fixes on order viewing ect
+- [fix] Orders for sub partners made by parnters, now get the right customer id
 v1.0.11
 **************
 - [fix] Customers where not set right on order

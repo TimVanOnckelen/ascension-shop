@@ -133,6 +133,14 @@ class FrontendReports {
 	private function generateClientOverview(){
 
 		$affiliate_id = affwp_get_affiliate_id();
+
+		if(NationalManager::isNationalManger(get_current_user_id())){
+
+			// Only get the clients from given country
+			$affiliate_id = NationalManager::getNationalManagerCountryAff(get_current_user_id());
+
+		}
+
         $customers = Helpers::getAllCustomersFromPartnerAndSubs($affiliate_id);
 
         $include = array();
@@ -144,12 +152,6 @@ class FrontendReports {
             }
         }else{
             $include[] = 0;
-        }
-
-
-        // National manager can export all users
-        if(NationalManager::isNationalManger(get_current_user_id()) == true){
-            $include = false;
         }
 
         $users = new \WP_User_Query(
@@ -278,7 +280,7 @@ class FrontendReports {
 				'number'       => $per_page,
 				'affiliate_id' => $affiliate_id,
 				'customer_id'  => $_GET["client"],
-				'status'       => $_GET["status"],
+				'status'       => "unpaid",
 				'date'         => array( 'start' => $_GET["from"], 'end' => $_GET["to"] ),
 				'description'  => $_GET["partner"],
 				'search'       => true

@@ -1,7 +1,7 @@
 
 .pc-tab > input,
 .pc-tab section > div {
-  display: none;
+  // display: none;
 }
 
 .pc-tab section > div {
@@ -10,21 +10,49 @@
   }
 }
 
-#tab1:checked ~ section .tab1,
-#tab2:checked ~ section .tab2,
-#tab3:checked ~ section .tab3,
-#tab4:checked ~ section .tab4{
-  display: block;
+.partnerArea-header {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  grid-template-areas:
+          "header header buttons";
+  padding: 10px;
+  border: 1px solid #efefef;
+  margin: 10px;
+
+  .header {
+    grid-area: header;
+    padding: 10px;
+  }
+  .buttons {
+    grid-area: buttons;
+    padding: 10px;
+    border-left: 1px solid#EFEFEF;
+    button {
+      width: 100%;
+    }
+  }
+}
+.no-borders {
+  border: 0px;
+  padding: 0;
+  margin: 0;
+  .header {
+    padding: 0;
+  }
+
 }
 
-#tab1:checked ~ nav .tab1,
-#tab2:checked ~ nav .tab2,
-#tab3:checked ~ nav .tab3,
-#tab3:checked ~ nav .tab4{
-  color: red;
+.dataTables_filter {
+  display: none;
 }
 
-
+table.affwp-table{
+  width: 100%;
+  table-layout: fixed;
+  tbody th, tbody td {
+    word-wrap: break-word;
+  }
+}
 .dataTables_wrapper .dataTables_filter {
   margin-right: 51px;
 }
@@ -62,4 +90,17 @@ table.wpem-responsive-table-wrapper tbody tr td .wpem-dboard-event-action .wpem-
 }
 #all-orders_filter {
   display: none;
+}
+
+.wpem-single-event-wrapper ul{
+  list-style: circle;
+}
+#affwp-affiliate-dashboard #affwp-affiliate-dashboard-tabs li, ul.ascension-sub-menu li  {
+  display:inline-block;
+}
+@media (max-width: 767px){
+
+  .affwp-table-responsive td:before  {
+    display:none;
+  }
 }

@@ -7,6 +7,9 @@ use AscensionShop\Lib\TemplateEngine;
 $affiliate_id = affwp_get_affiliate_id();
 $sub = new SubAffiliate($affiliate_id);
 
+if(!isset($_GET["partner"]) OR $_GET["partner"] == ''){
+    $_GET["partner"] = $affiliate_id;
+}
 
 $customers = affiliate_wp_lifetime_commissions()->integrations->get_customers_for_affiliate($affiliate_id);
 usort($customers, function ($first, $second) {
@@ -51,9 +54,8 @@ if(!isset($_GET["status"])){
 			'number'       => $per_page,
 			'affiliate_id' => $affiliate_id,
 			'customer_id' => $_GET["client"],
-			'status'       => $_GET["status"],
-            'date' => $date,
-            'description' => $_GET["partner"],
+			'status'       => array("paid","unpaid"),
+            'affiliate_id' => $_GET["partner"],
             'search' => true,
             'orderby' => "custom",
             'order' => 'ASC'
@@ -115,84 +117,73 @@ if(!isset($_GET["status"])){
 	echo $t->display("affiliate-wp/parts/commissions-overview.php");
 ?>
 
-    <table id="affwp-affiliate-dashboard-referrals-table" class="affwp-table">
+    <table class="affwp-table affwp-table-responsive order-details">
         <thead>
         <tr>
             <th class="referral-order-id"><?php _e( 'Order', 'affiliate-wp' ); ?></th>
             <th class="referral-client"><?php _e( 'Klant', 'affiliate-wp' ); ?></th>
             <th class="referral-percentage"><?php _e( 'Percentage', 'affiliate-wp' ); ?></th>
-            <th class="referral-status"><?php _e( 'Status', 'affiliate-wp' ); ?></th>
             <th class="referral-date"><?php _e( 'Datum', 'affiliate-wp' ); ?></th>
             <th class="referral-date"><?php _e( 'Betaal datum', 'affiliate-wp' ); ?></th>
-            <?php
-			/**
-			 * Fires in the dashboard referrals template, within the table header element.
-			 */
-			do_action( 'affwp_referrals_dashboard_th' );
-			?>
+            <th class="referral-date"><?php _e( 'Totaal bedrag inc btw', 'affiliate-wp' ); ?></th>
+            <th class="referral-date"><?php _e( 'Totaal bedrag ex btw', 'affiliate-wp' ); ?></th>
             <th class="referral-amount"><?php _e( 'Commission', 'affiliate-wp' ); ?></th>
         </tr>
         </thead>
-
         <tbody>
-		<?php if ( $referrals ) :
+		<?php
+        
+		if ( $referrals ) :
 
-            $old_parent = "";
+			$old_parent = "";
+			$sub = new SubAffiliate($affiliate_id);
 
-            foreach ( $referrals as $referral ) :
+			foreach ( $referrals  as $referral ) :
 
-	            $order_id = $referral->reference;
-	            $order = new \WC_Order($order_id);
-	            $user = $order->get_user();
+				$order_id = $referral->reference;
+				$order = new \WC_Order($order_id);
+				$user = $order->get_user();
 
-	            // Get percentage
-	            $percentage =  Helpers::getPercentageTable($sub,$order,$referral);
+				// Get percentage
+				$percentage =  Helpers::getPercentageTable($sub,$order,$referral);
 
-			    $parent = Helpers::getParentFromRef($referral);
+
+				$parent = Helpers::getParentFromRef($referral);
 
 				if(str_replace(' ','',strtolower($old_parent)) != str_replace(' ','',strtolower($parent))){
 
 					$old_parent = $parent;
-				    if($parent != '') {
-					    // Add a extra header row
-					    ?>
+					if($parent != '') {
+						// Add a extra header row
+						?>
                         <tr style="background-color:#eee;">
                             <td colspan="9"><b><?php echo $parent. ' - '.$percentage; ?></b></td>
                         </tr>
-					    <?php
-				    }else{
-					    // Add a extra header row
-					    ?>
+						<?php
+					}else{
+						// Add a extra header row
+						?>
                         <tr style="background-color:#eee;">
                             <td colspan="9"><b><?php echo __("Eigen commissies","ascension-shop"); ?></b></td>
                         </tr>
-					    <?php
-                    }
+						<?php
+					}
 
-                }
+				}
 
-                ?>
-                <tr style="background-color:#fff;">
+				?>
+                <tr>
                     <td class="ascension-order-info" data-th="<?php _e( 'Order', 'affiliate-wp' ); ?>">
-
-                        <a href="#" class="ascension-order-details-hover"># <?php echo $referral->reference; ?></a>
-
-		                <?php
-		                $t = new TemplateEngine();
-		                $t->order = $order;
-		                echo $t->display("affiliate-wp/dashboard-order-info.php");
-		                ?>
-
+                        <a href="<?php echo $order->get_view_order_url(); ?>" class="ascension-order-details-hover"># <?php echo $referral->reference; ?></a>
                     </td>
                     <td><?php echo $user->first_name . " " . $user->last_name; ?></td>
                     <td class="referral-percentage" data-th="<?php _e( 'Percentage', 'affiliate-wp' ); ?>">
 
-                       <?php echo $percentage; ?>
+						<?php echo $percentage; ?>
 
                     </td>
-                    <td class="referral-status <?php echo $referral->status; ?>" data-th="<?php _e( 'Status', 'affiliate-wp' ); ?>"><?php echo affwp_get_referral_status_label( $referral );  ?></td>
                     <td class="referral-date" data-th="<?php _e( 'Date', 'affiliate-wp' ); ?>"><?php echo esc_html( $referral->date_i18n( 'datetime' ) ); ?></td>
-                    <td><?php echo  get_post_meta( $referral->reference, "_paid_date", true ); ?></td>
+                    <td><?php echo date('d F Y H:i',strtotime(get_post_meta($referral->reference,"_paid_date",true))); ?></td>
 					<?php
 					/**
 					 * Fires within the table data of the dashboard referrals template.
@@ -208,11 +199,11 @@ if(!isset($_GET["status"])){
 		<?php else : ?>
 
             <tr>
-                <td class="affwp-table-no-data" colspan="5"><?php _e( 'You have not made any referrals yet.', 'affiliate-wp' ); ?></td>
+                <td class="affwp-table-no-data" colspan="5"><?php _e( 'Geen commissies gevonden.', 'affiliate-wp' ); ?></td>
             </tr>
 
 		<?php endif; ?>
-        <tr><td><b><?php _e("Totaal","ascension-shop"); ?></b></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td>&euro; <?php echo $totals["total"]; ?></td></tr>
+        <tr><td><b><?php _e("Totaal","ascension-shop"); ?></b></td><td></td><td></td><td></td><td></td><td></td><td></td><td><?php echo affwp_currency_filter( affwp_format_amount($totals["total"])); ?></td></tr>
         </tbody>
     </table>
 

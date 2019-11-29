@@ -48,7 +48,7 @@ class ClientCouponManager
         $aff_id = affwp_get_affiliate_id($user_id);
 
 	    // Set rate
-	    WC()->session->set('ascension_order_rate',0);
+	    // WC()->session->set('ascension_order_rate',0);
 
         if ($aff_id != false) {
 
@@ -96,14 +96,17 @@ class ClientCouponManager
         if (get_current_user_id() > 0) {
 
 	        // Set rate
-	        WC()->session->set('ascension_order_rate',0);
+	       //  WC()->session->set('ascension_order_rate',0);
 
             $user_id = get_current_user_id();
             $user_id = apply_filters("ascension_user_id_coupons", $user_id);
 
-            $rate = $this->customerHasDiscount($user_id);
+
+            $rate = floatval($this->customerHasDiscount($user_id));
+
 
             if ($rate > 0) {
+
 
 	            // Set rate
 	            WC()->session->set('ascension_order_rate',$rate);
@@ -111,7 +114,6 @@ class ClientCouponManager
                 $discount = ($cart->get_subtotal()) / 100 * $rate;
 
                 $cart->add_fee('Discount from Referring Parent', -$discount, true, 'zero-rate');
-
 
             }
 

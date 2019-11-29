@@ -1,4 +1,4 @@
-<div class="tab4">
+<div>
 	<?php
 	use AscensionShop\Affiliate\Helpers;
 	use AscensionShop\Affiliate\SubAffiliate;

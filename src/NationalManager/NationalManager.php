@@ -44,4 +44,17 @@ class NationalManager {
 		return __("National Manager Area","ascension-shop");
 	}
 
+	/**
+	 * Get the top end affiliate of the current lang
+	 * @param $userId
+	 *
+	 * @return mixed|void
+	 */
+	static public function getNationalManagerCountryAff($userId){
+		$current_lang = get_user_meta($userId, 'as_user_ln',true);
+		$current_lang = $current_lang[0];
+
+		return get_option("ascension-shop_standard_ref_" . $current_lang);
+	}
+
 }

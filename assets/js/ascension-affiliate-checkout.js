@@ -161,7 +161,7 @@
 
     $(document).on("ready",function () {
 
-        $("#ascension-clients").select2({width:'100%'});
+        $("#ascension-clients").select2({width:'100%',  allowClear: true, placeholder: "*"});
 
         // Reset on every refresh
         loadCustomer(0,0);

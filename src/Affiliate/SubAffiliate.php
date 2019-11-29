@@ -238,7 +238,7 @@ class SubAffiliate
 		return false;
 	}
 
-	public function getAllChildren($active=2){
+	public function getAllChildren($active=2,$add_self = false){
 
 		$children = Helpers::getAllChilderen($this->affiliate_id);
 

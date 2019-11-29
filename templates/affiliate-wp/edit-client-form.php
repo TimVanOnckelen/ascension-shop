@@ -1,7 +1,7 @@
 <form class="editUser" method="POST" action="<?php use AscensionShop\Affiliate\Helpers;
 use AscensionShop\NationalManager\NationalManager;
 
-echo admin_url('admin-post.php'); ?>" style="display: none;" id="edit-user-<?php echo $this->customer->user_id ?>" data-id="<?php echo $this->customer->user_id ?>">
+echo admin_url('admin-post.php'); ?>" id="edit-user-<?php echo $this->customer->user_id ?>" data-id="<?php echo $this->customer->user_id ?>">
 	<label for="email"><?php _e("Email adres","ascension-shop"); ?></label>
 	<input type="email" name="email" id="email" value="<?php echo $this->customer->email; ?>" disabled />
 	<label for="name"><?php _e("Naam","ascension-shop"); ?></label>
@@ -33,11 +33,17 @@ echo admin_url('admin-post.php'); ?>" style="display: none;" id="edit-user-<?php
     <input type="text" name="company" id="company"  value="<?php echo get_user_meta( $this->customer->user_id, 'billing_company', true ); ?>"  />
     <label for="vat"><?php _e("BTW nummer","ascension-shop"); ?></label>
     <input type="text" name="vat" id="vat"  value="<?php echo get_user_meta( $this->customer->user_id, 'vat_number', true ); ?>"  />
+    <label for="vat"><?php _e("Status","ascension-shop"); ?></label>
+    <select name="ascension_status" id="ascension_status">
+        <?php $status =  get_user_meta( $this->customer->user_id, 'ascension_status', true );  ?>
+        <option value=""><?php _e("Actief","ascension-shop"); ?></option>
+        <option value="non-active" <?php if($status == "non-active"){echo  "SELECTED"; } ?>><?php _e("Niet actief","ascension-shop"); ?></option>
+    </select>
 
     <?php
+    $customer_id = Helpers::getCustomerByUserId( $this->customer->user_id );
 
     if ( NationalManager::isNationalManger(get_current_user_id()) ) {
-	    $customer_id = Helpers::getCustomerByUserId( $this->customer->user_id );
 
 	    if ( $customer_id > 0 ) {
 		    $parent_id = Helpers::getParentByCustomerId($customer_id );

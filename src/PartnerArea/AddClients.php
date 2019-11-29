@@ -82,7 +82,8 @@ class AddClients
 	            wp_update_user(array(
 		            'ID' => $user_id,
 		            'first_name' => $_POST["name"],
-		            'last_name' => $_POST["lastname"]));
+		            'last_name' => $_POST["lastname"],
+		            'display_name' => $_POST["name"].' '.$_POST["lastname"]));
 
                 // Update client discount
                 update_user_meta($user_id, "ascension_shop_affiliate_coupon", $_REQUEST["discount"]);
@@ -116,7 +117,7 @@ class AddClients
 	    $affiliate_id = affwp_get_affiliate_id(get_current_user_id());
 	    $nonce_verify = wp_verify_nonce($_REQUEST['_wpnonce'], 'ascension_edit_customer' . $affiliate_id);
 
-	    $is_client_of = Helpers::isClientOfPartnerOfSubPartner($_POST["user_id"],$affiliate_id);
+	    $is_client_of = Helpers::isClientOfPartnerOfSubPartner($_POST["customer_id"],$affiliate_id);
 	    $username = strtolower($_REQUEST["name"] . "." . $_REQUEST["lastname"]);
 
 	    // National manager can mangage anyone :)
@@ -126,6 +127,8 @@ class AddClients
 		    $affiliate_id = 1;
 		    $is_client_of = true;
 	    }
+
+	    error_log("client:".$is_client_of);
 
 	    // No client of aff, so return
 	    if($is_client_of == false){
@@ -141,8 +144,10 @@ class AddClients
 		    wp_update_user(array(
 		    	'ID' => $_POST["user_id"],
 			    'first_name' => $_POST["name"],
-			    'last_name' => $_POST["lastname"]));
+			    'last_name' => $_POST["lastname"],
+			    'display_name' => $_POST["name"].' '.$_POST["lastname"]));
 
+		    // Update all meta
 		    update_user_meta($_POST["user_id"],"billing_first_name",$_POST["name"]);
 		    update_user_meta($_POST["user_id"],"billing_last_name",$_POST["lastname"]);
 		    update_user_meta($_POST["user_id"],"billing_address_1",$_POST["adres"]);
@@ -152,6 +157,7 @@ class AddClients
 		    update_user_meta($_POST["user_id"],"billing_country",$_POST["country"]);
 		    update_user_meta($_POST["user_id"],"billing_company",$_POST["company"]);
 		    update_user_meta($_POST["user_id"],"vat_number",$_POST["vat"]);
+		    update_user_meta($_POST["user_id"],"ascension_status",$_POST["ascension_status"]);
 
 		    if($_POST["customer_id"] != '') {
 			    affwp_update_customer( array(

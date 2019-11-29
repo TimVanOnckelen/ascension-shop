@@ -9,6 +9,7 @@
 namespace AscensionShop\Woocommerce;
 
 
+use AscensionShop\Affiliate\Helpers;
 use AscensionShop\Lib\TemplateEngine;
 
 class MyOrders
@@ -16,11 +17,43 @@ class MyOrders
 
     public function __construct()
     {
-        add_action("woocommerce_after_account_orders", array($this, "ordersForCustomers"));
+        // add_action("woocommerce_after_account_orders", array($this, "ordersForCustomers"));
         add_action("woocommerce_my_account_my_orders_actions", array($this, "filterOutOrdersByParent"), 10, 2);
         add_action("woocommerce_my_account_my_orders_column_order-total", array($this, "filterOutTotalAmount"), 10, 1);
         add_action("woocommerce_view_order", array($this, "removeOrderFromParent"), 5, 1);
         add_filter("wpo_wcpdf_check_privs", array($this, "checkIfInvoiceIsAvailable"), 10, 2);
+	    add_filter( 'user_has_cap', array($this,"allowViewOrder"), 10, 3 );
+    }
+
+    public function allowViewOrder($allcaps,$cap,$args){
+	    $affiliate_id = affwp_get_affiliate_id();
+
+
+    	// Allow to see other orders
+    	if($cap[0] == "view_order" && $affiliate_id > 0){
+
+    		// Do nothing if already true :)
+    		if($allcaps[$cap[0]] === true){
+    			return $allcaps;
+		    }
+
+    		$order_id = $args[2];
+		    // Get an instance of the WC_Order object
+		    $order = wc_get_order($order_id);
+		    // Get the user ID from WC_Order methods
+		    $user_id = $order->get_customer_id(); // or $order->get_customer_id();
+    		$client_id = Helpers::getCustomerByUserId($user_id);
+
+    		$is_client = Helpers::isClientOfPartnerOfSubPartner($client_id, $affiliate_id);
+
+    		// CLient is from affiliate
+    		if($is_client === true) {
+			    $allcaps[ $cap[0] ] = true;
+		    }
+
+			return $allcaps;
+	    }
+    	return $allcaps;
     }
 
     public function ordersForCustomers($has_orders)
@@ -71,7 +104,7 @@ class MyOrders
 
 
         // Nothing to do, just go on :)
-        if ($parent_id <= 0 OR $payer === true) {
+        if ($parent_id <= 0 OR $payer === 'true') {
             return $actions;
         }
 
@@ -101,7 +134,7 @@ class MyOrders
         }
 
         // Nothing to do, just go on :)
-        if ($parent_id <= 0 OR $payer == 1) {
+        if ($parent_id <= 0 OR $payer == 'true') {
             echo "&euro;" . $total;
             return;
 
@@ -125,7 +158,7 @@ class MyOrders
         }
 
         // Nothing to do, just go on :)
-        if ($parent_id <= 0 OR $payer == 1) {
+        if ($parent_id <= 0 OR $payer == 'true') {
             return;
         }
 
@@ -156,7 +189,7 @@ class MyOrders
         }
 
         // Nothing to do, just go on :)
-        if ($parent_id <= 0 OR $payer == 1) {
+        if ($parent_id <= 0 OR $payer == 'true') {
             return $allowed;
         }
 

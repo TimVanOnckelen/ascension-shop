@@ -40,70 +40,86 @@ $partners_amount = count($partners);
             <thead>
             <tr>
                 <th>ID</th>
-                <th><?php _e("Naam",'ascension-shop'); ?></th>
-                <th class="customer-first-name"><?php _e( 'Gegevens', 'ascension-shop' ); ?></th>
+                <th class="customer-first-name" width="40%"><?php _e( 'Gegevens', 'ascension-shop' ); ?></th>
                 <th><?php _e("Status","ascension-shop"); ?></th>
                 <th><?php _e("Sub partner van","ascension-shop"); ?></th>
-                <th><?php _e("Tools","ascension-shop"); ?></th>
                 <th class="customer-discount"><?php _e('Commissie (%)',"ascension-shop") ?></th>
             </tr>
             </thead>
 
+
             <tbody>
-			<?php foreach ( $partners as $partner ) : ?>
+	        <?php foreach ( $partners as $partner ) :
 
+		        if ( $partner ): ?>
 
-				<?php if ( $partner ): ?>
 
                     <tr>
-                        <td><a href="?tab=commission-overview&partner=<?php echo $partner->getId(); ?>">#<?php echo $partner->getId(); ?></a></td>
-                        <td>    <b><?php echo $partner->getName(); ?><br /></b>		</td>
+                        <td><a href="?tab=commission-overview&partner=<?php echo $partner->getId(); ?>">#<?php echo $partner->getId(); ?></a><br />
+                            <a href="#edit-user-<?php echo $partner->getUserId(); ?>" class="edit-user" rel="modal:open" data-id="<?php echo $partner->getUserId(); ?>"><?php _e("Bewerk","ascension-shop"); ?></a><br />
+                        </td>
                         <td class="customer-first-name" data-th="<?php _e( 'Gegevens', 'ascension-shop' ); ?>">
-                            <div id="info-user-<?php echo $partner->getUserId(); ?>">
-                            <b><?php echo $partner->getName(); ?><br /></b>							<?php echo get_user_meta( $partner->getUserId(), 'billing_address_1', true ); ?><br />
-							<?php echo get_user_meta( $partner->getUserId(), 'billing_postcode', true ). ' '.get_user_meta( $partner->getUserId(), 'billing_city', true ); ?><br />
-	                            <?php echo WC()->countries->countries[ get_user_meta( $partner->getUserId(), 'billing_country', true )]; ?><br />
-                                <br />
-							<?php echo get_user_meta( $partner->getUserId(), 'billing_phone', true ); ?><br />
-							<?php echo $partner->getEmail(); ?><br />
-	                            <?php echo get_user_meta( $partner->getUserId(), 'billing_company', true ); ?><br />
-                                <?php echo get_user_meta( $partner->getUserId(), 'vat_number', true ); ?><br />
-
+                            <div id="info-user-<?php echo $partner->getUserId(); ?>" class="partnerArea-header no-borders">
+                                <div class="header">
+                                    <a href="?tab=commission-overview&partner=<?php echo $partner->getId(); ?>"><b><?php echo $partner->getName(); ?><br /></b></a>
+							        <?php echo get_user_meta( $partner->getUserId(), 'billing_phone', true ); ?><br />
+							        <?php echo $partner->getEmail(); ?><br />
+                                </div>
+                                <div class="modal" id="adress-user-<?php
+						        echo $partner->getUserId(); ?>" style="display: none;">
+							        <?php echo get_user_meta( $partner->getUserId(), 'billing_address_1', true ); ?><br />
+							        <?php echo get_user_meta( $partner->getUserId(), 'billing_postcode', true ). ' '.get_user_meta( $partner->getUserId(), 'billing_city', true ); ?><br />
+							        <?php if($partner_country != ''){ echo WC()->countries->countries[$partner_country]; } ?> <br />
+                                    <br />
+							        <?php echo get_user_meta( $partner->getUserId(), 'billing_company', true ); ?><br />
+							        <?php echo get_user_meta( $partner->getUserId(), 'vat_number', true ); ?><br />
+                                </div>
+                                <div class="buttons">
+                                    <a href="#adress-user-<?php echo $partner->getUserId(); ?>" class="edit-user" rel="modal:open" data-id="<?php echo $partner->getUserId(); ?>"><?php _e("Adres","ascension-shop"); ?></a><br />
+							        <?php
+							        $user = new \WP_User($partner->getUserId());
+							        $adt_rp_key = get_password_reset_key($user);
+							        $user_login = $user->user_login;
+							        if(!is_wp_error($adt_rp_key)) {
+								        $rp_link = '<a href="' . wp_login_url() . "?action=rp&key=$adt_rp_key&login=" . rawurlencode( $user_login ) . '" target="_blank">' . __( "Reset wachtwoord", "ascension-shop" ) . '</a>';
+							        }else{
+								        $rp_link = __("Password change not available","ascension-shop");
+							        }
+							        echo $rp_link;
+							        ?>
+                                </div>
                             </div>
-	                        <?php
+                            <div class="modal" id="user-edit-<?php echo $partner->getUserId(); ?>">
+						        <?php
 
-	                        $t = new TemplateEngine();
-	                        $t->partner = $partner;
-	                        $t->affiliate_id = $affiliate_id;
-	                        echo $t->display("affiliate-wp/edit-partner-form.php");
+						        $t = new TemplateEngine();
+						        $t->partner = $partner;
+						        $t->affiliate_id = $affiliate_id;
+						        echo $t->display("affiliate-wp/edit-partner-form.php");
 
-	                        ?>
+						        ?>
+                            </div>
                         </td>
                         <td><?php
-                            if($partner->getStatus() == 1){
-                                _e("Actief","ascension-shop");
-                            }else{
-                                _e("Niet actief","ascension-shop");
-                            }
-                            ?></td>
-                        <td>
-	                        <?php
-	                        if($partner->getParentId() > 0){
-		                        echo '#'.$partner->getParentId();
-		                        echo ' '.affiliate_wp()->affiliates->get_affiliate_name($partner->getParentId());
-	                        } ?>
-                        </td>
-                        <td>
-                            <a href="#" class="edit-user" data-id="<?php echo $partner->getUserId(); ?>"><?php _e("Bewerk","ascension-shop"); ?></a><br />
-                            <a href="?tab=commission-overview&partner=<?php echo $partner->getName(); ?>"><?php _e("Commissies","ascension-shop"); ?></a>
+					        if($partner->getStatus() == 1){
+						        _e("Actief","ascension-shop");
+					        }else{
+						        _e("Niet actief","ascension-shop");
+					        }
+					        ?></td>
+                        <td><?php
+					        if($partner->getParentId() > 0){
+						        echo '#'.$partner->getParentId();
+						        echo ' '.affiliate_wp()->affiliates->get_affiliate_name($partner->getParentId());
+					        } ?>
                         </td>
                         <td class="customer-discount" width="20%"><?php echo $partner->getUserRate(); ?>%
                         </td>
                     </tr>
 
-				<?php endif; ?>
+		        <?php endif; ?>
 
-			<?php endforeach; ?>
+	        <?php endforeach; ?>
             </tbody>
         </table>
 	<?php else : ?>
@@ -116,6 +132,7 @@ $partners_amount = count($partners);
     (function($){
         $(document).ready( function () {
             $('#partners-overview ').DataTable({
+                autoWidth: false,
                 'columnDefs'        : [         // see https://datatables.net/reference/option/columns.searchable
                     {
                         'searchable'    : false,

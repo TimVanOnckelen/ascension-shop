@@ -2,36 +2,36 @@
 
     $(document).on("ready",function () {
 
-        $("#searchByPartner").select2({width:'100%',  allowClear: true});
-        $(".searchByPartner").select2({width:'100%',  allowClear: true});
+
+        $("#searchByPartner").select2({width:'100%',  allowClear: true, placeholder: "*"});
+        $(".searchByPartner").select2({width:'100%',  allowClear: true, placeholder: "*"});
+        $("#ascension-clients").select2({width:'100%',  allowClear: true, placeholder: "*"});
+
         $("#searchOrderByClient").select2({
             ajax: {
                 url: getClients.url,
-                type : "GET",
-                beforeSend: function ( xhr ) {
-                    xhr.setRequestHeader( 'X-WP-Nonce', getClients.nonce );
+                'beforeSend': function ( xhr ) {
+                    xhr.setRequestHeader( 'X-WP-Nonce', OrderArea.nonce );
+                },
+                data: function (params) {
+                    var query = {
+                        search: params.term
+                    }
+
+                    // Query parameters will be ?search=[term]&type=public
+                    return query;
                 },
                 processResults: function (data) {
-                    // Transforms the top-level key of the response object from 'items' to 'results'
-                    console.log(data);
                     return {
-                        results: data.data
+                        results: $.map(data.items, function (item) {
+                            return {
+                                text: item.text,
+                                id: item.id
+                            }
+                        })
                     };
-                },n
-                // Additional AJAX parameters go here; see the end of this chapter for the full code of this example
-            },
-            minimumInputLength: 1,
-        });
-
-        $("body").on("click",".edit-user",function (e) {
-
-            e.preventDefault();
-            let id = $(this).attr("data-id");
-
-            $("#edit-user-"+id).show();
-            $("#info-user-"+id).hide();
-
-
+                }
+            }
         });
 
         $(".downloadOverview").on("click",function(){
@@ -58,12 +58,40 @@
 
         });
 
+        // set standard client
+        var theClientId = getQueryVariable("id");
+        var clientSearch = '';
+        console.log("Client Id:".theClientId);
+
+        if(theClientId !== false){
+
+            $("#searchOrderByClient").val(theClientId);
+            clientSearch = {"sSearch": theClientId};
+
+        }else{
+            clientSearch = null;
+        }
+
+
 
         let OrdersTable =  $(OrderArea.tableId).DataTable(
             {
+                language: {
+                  processing: partnerArea.processingText,
+
+                },
+                autoWidth: false,
                 processing: true,
                 serverSide: true,
                 ordering: false,
+                "aoSearchCols":
+                    [null,
+                        null,
+                        null,
+                        null,
+                        clientSearch,
+                        null,
+                        null],
                 ajax: {
                     'url' : OrderArea.url,
                     'type' : "GET",
@@ -77,45 +105,48 @@
                 columns: [
                     {"data": "id"},
                     {"data": "date"},
-                    {"data": "status"},
-                    {"data" : "amount"},
                     {"data": "client"},
                     {"data": "partner"},
+                    {"data": "status"},
+                    {"data" : "amount"},
                     {"data" : "actions"},
-
                 ],
             }
 
         );
 
-        OrdersTable.columns().every( function (index) {
+
+        /*
+        Search on order table if init
+         */
+        OrdersTable.columns().every(function (index) {
             var that = this;
 
-            if(index === 0) {
+            if (index === 0) {
 
                 $("#order-id-search").on('keyup change', function () {
 
                     theId = $(this).val();
 
-                        if (that.search() !== this.value) {
-                            that
-                                .search(theId)
-                                .draw();
-                        }
+                    if (that.search() !== this.value) {
+                        that
+                            .search(theId)
+                            .draw();
+                    }
 
                 });
             }
 
-            if(index === 1) {
+            if (index === 1) {
                 $("#orders-to,#orders-from").on('change', function () {
 
                     var from = $("#orders-from").val();
                     var to = $("#orders-to").val();
 
-                    if(from !== '' &&  to !== ''){
+                    if (from !== '' && to !== '') {
 
 
-                        var search = from+'...'+to;
+                        var search = from + '...' + to;
 
                         if (that.search() !== this.value) {
                             that
@@ -127,7 +158,8 @@
             }
 
 
-            if(index === 4) {
+            if (index === 4) {
+
                 $("#searchOrderByClient").on('change', function () {
 
                     if (that.search() !== this.value) {
@@ -142,8 +174,10 @@
 
 
 
+
         let theTable =  $(partnerArea.tableId).DataTable(
             {
+                autoWidth: false,
                 processing: true,
                 serverSide: true,
                 ordering: false,
@@ -158,30 +192,54 @@
                     }
                 },
                 columns: [
-                    {"data": "id"},
-                    {"data": "name"},
+                    {"data" : "id",render: function (dataField) {
+                            return '#'+dataField+'<br /><a href="#user-edit-'+dataField+'" rel="modal:open" class="edit-user">'+partnerArea.editText+'</a>';
+                        }},
                     {"data": "info"},
                     {"data" : "partner"},
-                    {"data" : "id",render: function (dataField) {
-                            return '<a href="#" class="edit-user" data-id="'+dataField+'">'+partnerArea.editText+'</a>';
-                        }},
                     {"data": "discount"}
                 ],
             }
         );
 
-        theTable.columns().every( function () {
+
+        theTable.columns().every(function (index) {
             var that = this;
 
-            $("select#searchByPartner").on('change', function () {
-                if (that.search() !== this.value) {
-                    that
-                        .search(this.value)
-                        .draw();
-                }
-            });
+            if (index === 0) {
+                $("select#searchByPartner").on('change', function () {
+                    if (that.search() !== this.value) {
+                        that.settings()[0].jqXHR.abort();
+
+                        that
+                            .search(this.value)
+                            .draw();
+                    }
+                });
+
+            }
+
+            if (index === 1) {
+
+                $("#searchByName").on('keyup change', function () {
+
+                    theId = $(this).val();
+
+                    console.log(theId);
+                    if (that.search() !== this.value) {
+
+                        that.settings()[0].jqXHR.abort();
+
+                        that
+                            .search(theId)
+                            .draw();
+                    }
+
+                });
+            }
 
         });
+
 
 
         $("body").on("submit",".editUser",function (e) {
@@ -192,7 +250,8 @@
             let id = $(this).attr("data-id");
 
             $(this).hide();
-            $("#info-user-"+id).before("<div id='userEditLoading'><b>"+partnerArea.savingText+"</b></div>");
+            $(this).parent().html("<div id='userEditLoading'><b>"+partnerArea.savingText+"</b></div>")
+            // $("#info-user-"+id).before("<div id='userEditLoading'><b>"+partnerArea.savingText+"</b></div>");
 
             $.ajax({
                 type: "POST",
@@ -211,6 +270,8 @@
 
                     if($(partnerArea.tableId).length){
                         var info = theTable.page.info();
+
+                        $.modal.close();
 
                         theTable.ajax.reload(function () {
                             theTable.page(info.page+1);
@@ -232,8 +293,7 @@
             var url = form.attr('action');
             let id = $(this).attr("data-id");
 
-            $(this).hide();
-            $("#info-user-"+id).before("<div id='userEditLoading'><b>"+partnerArea.savingText+"</b></div>");
+            $(this).hide().before("<div id='userEditLoading'><b>"+partnerArea.savingText+"</b></div>");
 
             $.ajax({
                 type: "POST",
@@ -293,5 +353,16 @@
 
     });
 
+
+    function getQueryVariable(variable)
+    {
+        var query = window.location.search.substring(1);
+        var vars = query.split("&");
+        for (var i=0;i<vars.length;i++) {
+            var pair = vars[i].split("=");
+            if(pair[0] == variable){return pair[1];}
+        }
+        return(false);
+    }
 
 })(jQuery);

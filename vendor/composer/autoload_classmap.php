@@ -37,6 +37,7 @@ return array(
     'AscensionShop\\Shipping\\emails\\TrackingCode_Email' => $baseDir . '/src/Shipping/emails/TrackingCode_Email.php',
     'AscensionShop\\Woocommerce\\AdminEmails' => $baseDir . '/src/Woocommerce/AdminEmails.php',
     'AscensionShop\\Woocommerce\\AdminOrders' => $baseDir . '/src/Woocommerce/AdminOrders.php',
+    'AscensionShop\\Woocommerce\\CashGateway' => $baseDir . '/src/Woocommerce/CashGateway.php',
     'AscensionShop\\Woocommerce\\Custom_WC_emails' => $baseDir . '/src/Woocommerce/Custom_WC_emails.php',
     'AscensionShop\\Woocommerce\\CustomerPayGateway' => $baseDir . '/src/Woocommerce/CustomerPayGateway.php',
     'AscensionShop\\Woocommerce\\MyOrders' => $baseDir . '/src/Woocommerce/MyOrders.php',

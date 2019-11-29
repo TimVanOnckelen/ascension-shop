@@ -23,10 +23,7 @@
     display: inline-block;
     margin-right: 10px;
   }
-  input,select {
-    width: 20%;
-    margin:10px;
-  }
+
 }
 
 .ascension-report-overview {
@@ -58,16 +55,42 @@
 iframe[name="printIframe"]{
   display: none;
 }
-@media print {
-  body {
-    -webkit-print-color-adjust: exact !important;
-  }
-  .whb-sticky-shadow.whb-sticked .whb-row:last-child,.page-title-default,#affwp-affiliate-dashboard #affwp-affiliate-dashboard-tabs,#ascension-filters{
-    display: none;
-  }
-  .ascension-report-overview {
-    .blocks {
-      display: none;
-    }
-  }
+.order-details {
+  table-layout: fixed;
+}
+.order-details tr {
+  page-break-inside: always;
+  page-break-after: auto;
+}
+
+.order-details td,
+.order-details th {
+  border-bottom: 1px #ccc solid;
+  border-top: 1px #ccc solid;
+  padding: 0.375em;
+}
+
+.order-details th {
+  font-weight: bold;
+  text-align: left;
+}
+
+.order-details thead th {
+  color: white;
+  background-color: #830051;
+  border-color: #830051;
+}
+
+/* product bundles compatibility */
+.order-details tr.bundled-item td.product {
+  padding-left: 5mm;
+}
+
+.order-details tr.product-bundle td,
+.order-details tr.bundled-item td {
+  border: 0;
+}
+
+.order-details tr.bundled-item.hidden {
+  display: none;
 }

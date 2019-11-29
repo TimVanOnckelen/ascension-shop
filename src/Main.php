@@ -46,7 +46,7 @@ class Main
 
 
         // Locate wc template to overwrite
-        add_filter('woocommerce_locate_template', array($this, 'myplugin_woocommerce_locate_template'), 1, 3);
+        add_filter('woocommerce_locate_template', array($this, 'myplugin_woocommerce_locate_template'), 1, 100);
 
         // Load global hooks
         $this->globalHooks();
@@ -119,10 +119,7 @@ class Main
 
         // Get the client coupon
         new ClientCouponManager();
-
-        // Watefall
-        // new Waterfall();
-
+        
 	    /**
 	     * Partner Area
 	     */
@@ -169,7 +166,7 @@ class Main
         global $woocommerce;
         $_template = $template;
         if (!$template_path) $template_path = $woocommerce->template_url;
-        $plugin_path = XE_ASCENSION_SHOP_PLUGIN_TEMPLATE_PATH . '/woocommerce';
+        $plugin_path = XE_ASCENSION_SHOP_PLUGIN_TEMPLATE_PATH . '/woocommerce/';
         // Look within passed path within the theme - this is priority
         $template = locate_template(
             array(

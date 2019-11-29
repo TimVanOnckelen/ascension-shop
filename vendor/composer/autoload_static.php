@@ -176,6 +176,7 @@ class ComposerStaticInit7422202dbb1add0445e0ca349a683d50
         'AscensionShop\\Shipping\\emails\\TrackingCode_Email' => __DIR__ . '/../..' . '/src/Shipping/emails/TrackingCode_Email.php',
         'AscensionShop\\Woocommerce\\AdminEmails' => __DIR__ . '/../..' . '/src/Woocommerce/AdminEmails.php',
         'AscensionShop\\Woocommerce\\AdminOrders' => __DIR__ . '/../..' . '/src/Woocommerce/AdminOrders.php',
+        'AscensionShop\\Woocommerce\\CashGateway' => __DIR__ . '/../..' . '/src/Woocommerce/CashGateway.php',
         'AscensionShop\\Woocommerce\\Custom_WC_emails' => __DIR__ . '/../..' . '/src/Woocommerce/Custom_WC_emails.php',
         'AscensionShop\\Woocommerce\\CustomerPayGateway' => __DIR__ . '/../..' . '/src/Woocommerce/CustomerPayGateway.php',
         'AscensionShop\\Woocommerce\\MyOrders' => __DIR__ . '/../..' . '/src/Woocommerce/MyOrders.php',

@@ -227,6 +227,12 @@ class Helpers
     	return $totals;
     }
 
+	/**
+	 * Get the parent from the given referral
+	 * @param $referral
+	 *
+	 * @return string
+	 */
     static function getParentFromRef($referral){
 
     	$parent = '';
@@ -337,7 +343,7 @@ class Helpers
 	 *
 	 * @return array
 	 */
-    public static function getAllCustomersFromPartnerAndSubs($aff_id,$addPartners = false){
+    public static function getAllCustomersFromPartnerAndSubs($aff_id,$addPartners = false,$allow_inactive = false){
 
 	    global $wpdb;
 
@@ -356,12 +362,23 @@ class Helpers
 		    $childeren_mysql = $aff_id;
 	    }
 
-	    $query = $wpdb->get_results("SELECT affwp_customer_id FROM {$wpdb->prefix}affiliate_wp_customermeta WHERE meta_key='affiliate_id' AND meta_value IN ('{$childeren_mysql}')");
+	    $query = $wpdb->get_results("SELECT {$wpdb->prefix}affiliate_wp_customermeta.affwp_customer_id,{$wpdb->prefix}affiliate_wp_customers.user_id FROM {$wpdb->prefix}affiliate_wp_customermeta INNER JOIN {$wpdb->prefix}affiliate_wp_customers ON  {$wpdb->prefix}affiliate_wp_customermeta.affwp_customer_id = {$wpdb->prefix}affiliate_wp_customers.customer_id WHERE {$wpdb->prefix}affiliate_wp_customermeta.meta_key='affiliate_id' AND meta_value IN ('{$childeren_mysql}')");
 	    $customers = array();
 
 	    if(count($wpdb->last_result) > 0){
 	    	foreach ($wpdb->last_result as $customer){
-			    $customers[] = affwp_get_customer( $customer->affwp_customer_id );
+
+				$show = true;
+	    		$active = get_user_meta($customer->user_id,"ascension_status",true);
+	    		// Do not show inactive if not asked for
+	    		if($active === "non-active" && $allow_inactive === false){
+	    			$show = false;
+			    }
+
+	    		// Only add active customers
+	    		if($show === true) {
+				    $customers[] = affwp_get_customer( $customer->affwp_customer_id );
+			    }
 		    }
 	    }
 
@@ -406,7 +423,7 @@ class Helpers
 	    $childeren = $sub->getAllChildren();
 
 	    if($childeren != null) {
-		    $childeren = self::getAllIdsFromSubs( $childeren );
+		    $childeren = self::getAllIdsFromSubs( $childeren,$affiliate );
 		    $childeren_mysql = join( "','", $childeren );
 	    }
 
@@ -420,9 +437,13 @@ class Helpers
 
     }
 
-    private static function getAllIdsFromSubs($subs){
+    private static function getAllIdsFromSubs($subs,$aff=false){
 
     	$return = array();
+
+    	if($aff !== false){
+    		$return[] = $aff;
+	    }
 
     	foreach($subs as $s){
     		$return[] = $s->getId();

@@ -12,14 +12,14 @@ class Frontend {
 
 	function __construct() {
 
-		add_filter( 'woocommerce_account_menu_items', array( $this, 'addNationalManagerLink' ), 100 );
+		add_filter( 'woocommerce_account_menu_items', array( $this, 'addNationalManagerLink' ), 1000 );
 		add_rewrite_endpoint( 'national-manager-area', EP_PAGES );
 		add_action( 'woocommerce_account_national-manager-area_endpoint', array($this,"nationalManagerArea") );
 
 		add_action( 'rest_api_init',  function() {
 			register_rest_route( 'ascension-shop/v1', '/orders/all', array(
 				'methods'  => 'GET',
-				'callback' => array( $this, 'loadOrders' ),
+				'callback' => array( $this, 'loadOrdersREST' ),
 				'permission_callback' => function () {
 					if(affwp_get_affiliate_id() > 0){
 						return true;
@@ -53,9 +53,9 @@ class Frontend {
 		});
 
 		add_action( 'rest_api_init',  function() {
-			register_rest_route( 'ascension-shop/v1', 'clients/select-list', array(
+			register_rest_route( 'ascension-shop/v1', '/clients/select-list', array(
 				'methods'  => 'GET',
-				'callback' => array( $this, 'clientListForSelect2' ),
+				'callback' => array( $this, 'clientSelectListRest' ),
 				'permission_callback' => function () {
 					if(affwp_get_affiliate_id() > 0){
 						return true;
@@ -70,7 +70,9 @@ class Frontend {
 
 		});
 
-		add_action('wp_enqueue_scripts', array($this,'loadJs'));
+
+
+		add_action('wp_enqueue_scripts', array($this,'loadJs'),100);
 
 		add_action('event_manager_get_dashboard_events_args',array($this,"getAllEventsIfNationalManager"),10,1);
 		add_action('event_manager_user_can_edit_pending_submissions',array($this,"canEditEventNoParameters"));
@@ -93,9 +95,13 @@ class Frontend {
 			wp_enqueue_script("dataTables","//cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js","jquery");
 			wp_enqueue_style("dataTables","//cdn.datatables.net/1.10.20/css/jquery.dataTables.min.css");
 			wp_enqueue_script("sweetAlert","https://cdn.jsdelivr.net/npm/sweetalert2@8");
+			wp_enqueue_script('jquerymodal','https://cdnjs.cloudflare.com/ajax/libs/jquery-modal/0.9.1/jquery.modal.min.js');
+			wp_enqueue_style('jquerymodal','https://cdnjs.cloudflare.com/ajax/libs/jquery-modal/0.9.1/jquery.modal.min.css');
 			wp_enqueue_style("ascension-info-css", XE_ASCENSION_SHOP_PLUGIN_DIR . "/assets/css/refferal-order-info.min.css",null,"1.0.1.7");
-			wp_enqueue_style("national-manager",XE_ASCENSION_SHOP_PLUGIN_DIR."/assets/css/national-manager.min.css",null,"1.0.11");
-			wp_enqueue_script("partnerAreaFunctions",XE_ASCENSION_SHOP_PLUGIN_DIR . "/assets/js/partnerAreaFunctions.min.js",array("jquery","sweetAlert","select2"),'1.1.29');
+			wp_enqueue_style("national-manager",XE_ASCENSION_SHOP_PLUGIN_DIR."/assets/css/national-manager.min.css",null,"1.0.12");
+			wp_deregister_script("select2");
+			wp_enqueue_script("select2","https://cdn.jsdelivr.net/npm/select2@4.0.12/dist/js/select2.min.js","jquery","1.0.1");
+			wp_enqueue_script("partnerAreaFunctions",XE_ASCENSION_SHOP_PLUGIN_DIR . "/assets/js/partnerAreaFunctions.min.js",array("jquery","sweetAlert","select2"),'1.1.30');
 
 			// Add vars to script
 			wp_localize_script( 'partnerAreaFunctions', 'partnerArea', array(
@@ -108,7 +114,11 @@ class Frontend {
 				"succesTextDiscount" => __("Korting succesvol aangepast!","ascension-shop"),
 				"successTextTitle" => __("Aanpassen gelukt!","ascension-shop"),
 				'referer'       => home_url( $wp->request ),
-				'tableId'       => "#all-clients"
+				'tableId'       => "#all-clients",
+				'processingText' => __('Processing','ascension-shop'),
+				'showText' => __('Show','ascension-shop'),
+				'enteriesText' => __('enteries','ascension-shop'),
+
 			) );
 
 		// Add vars to script
@@ -179,100 +189,64 @@ class Frontend {
 			exit();
 		}
 
-
 		// Get the main template
 		$main = new TemplateEngine();
 		$main->lang = NationalManager::getNationalMangerLang(get_current_user_id());
 
-		// Get Orders template
-		$t = new TemplateEngine();
-		$t->lang = NationalManager::getNationalMangerLang(get_current_user_id());
+		if(!isset($_GET["page"]) && isset($_GET["tab"])){
+			$_GET["page"] = $_GET["tab"];
+		}
 
-		//$orders = $this->getOrders($t->lang[0]);
-		// $t->orders = $orders;
-		$t->clients = $this->loadAllClientIdsForSearch();
-		$main->content = $t->display('national-manager/all-orders.php');
+		switch ($_GET["page"]){
 
-		// Get clients template
-		$t = new TemplateEngine();
-		$t->lang = NationalManager::getNationalMangerLang(get_current_user_id());
-		$main->content .= $t->display('national-manager/all-clients.php');
+			case "clients";
+				// Get clients template
+				$t = new TemplateEngine();
+				$t->lang = NationalManager::getNationalMangerLang(get_current_user_id());
+				$main->content = $t->display('national-manager/all-clients.php');
+				break;
+			case "partners";
+				// Get partners template
+				$t = new TemplateEngine();
+				$t->lang = NationalManager::getNationalMangerLang(get_current_user_id());
+				$main->content = $t->display('national-manager/all-partners.php');
+
+				break;
+
+			case "add-partner";
+				// Add partner template
+				$t = new TemplateEngine();
+				$t->lang = NationalManager::getNationalMangerLang(get_current_user_id());
+				$main->content = $t->display('national-manager/add-partner-form.php');
+				break;
+
+			default;
+			// Get Orders template
+			$t = new TemplateEngine();
+			$t->lang = NationalManager::getNationalMangerLang(get_current_user_id());
+			// $t->clients = $this->loadAllClientIdsForSearch();
+			$main->content = $t->display('national-manager/all-orders.php');
+
+			break;
+
+		}
 
 
-		// Get partners template
-		$t = new TemplateEngine();
-		$t->lang = NationalManager::getNationalMangerLang(get_current_user_id());
-		$main->content .= $t->display('national-manager/all-partners.php');
 
-
-		// Add partner template
-		$t = new TemplateEngine();
-		$t->lang = NationalManager::getNationalMangerLang(get_current_user_id());
-		$main->content .= $t->display('national-manager/add-partner-form.php');
 
 		echo $main->display('national-manager/main.php');
 
 
 	}
 
-	private function loadAllClientIdsForSearch(){
 
-		$partner = affwp_get_affiliate_id();
-
-		if($partner > 0) {
-			if(NationalManager::isNationalManger(get_current_user_id()) === false) {
-				$include = Helpers::getAllCustomersFromPartnerAndSubs( $partner );
-			}else{
-				$include = ''; // everyone
-			}
-		}
-
-		// Filter out users
-		$users = new \WP_User_Query(
-			array(
-				'number' => -1,
-				'include' => $include,
-				'meta_key' => 'last_name',
-				'orderby' => 'meta_value',
-			)
-		);
-
-		// Get the results
-		$users_result = $users->get_results();
-
-		return $users_result;
-	}
-
-	public static function loadAllClientsForSearchStatic(){
-
-		$partner = affwp_get_affiliate_id();
-
-		if($partner > 0) {
-			if(NationalManager::isNationalManger(get_current_user_id()) === false) {
-				$include = Helpers::getAllCustomersFromPartnerAndSubs( $partner );
-			}else{
-				$include = ''; // everyone
-			}
-		}
-
-		// Filter out users
-		$users = new \WP_User_Query(
-			array(
-				'number' => -1,
-				'include' => $include,
-				'meta_key' => 'last_name',
-				'orderby' => 'meta_value',
-			)
-		);
-
-		// Get the results
-		$users_result = $users->get_results();
-
-		return $users_result;
-
-	}
-
-	public function loadOrders($request){
+	/**
+	 * Load the orders based on REST request
+	 * @param $request
+	 *
+	 * @return \WP_REST_Response
+	 */
+	public function loadOrdersREST($request){
 
 		$search = $request["columns"];
 		$amount = $request["length"];
@@ -285,7 +259,7 @@ class Frontend {
 		// Load clients
 		$include = self::loadClientsFromGivenPartner($partner);
 
-		$returndata = $this->loadOrdersResponse($search,$amount,$start,$draw,$partner='',$client,$include);
+		$returndata = $this->loadOrdersRESTResponse($search,$amount,$start,$draw,$partner='',$client,$include);
 
 		// Create the response object
 		$response = new \WP_REST_Response( $returndata );
@@ -310,22 +284,10 @@ class Frontend {
 	 *
 	 * @return array
 	 */
-	public function loadOrdersResponse($search,$amount,$start,$draw,$partner,$client,$include=false){
+	public function loadOrdersRESTResponse($search,$amount,$start,$draw,$partner,$client,$include=false){
 
-		$meta_query = array();
 
-		// Only get orders from specific lang if national manager
-		if(NationalManager::isNationalManger(get_current_user_id()) === true){
-			$meta_query = array(
-				array(
-					'key'     => 'wpml_language',
-					'compare' => '=',
-					'value'   => NationalManager::getNationalMangerLang(get_current_user_id()),
-				),
-			);
-			// Add every order, from every client. :)
-			$include = false;
-		}
+
 
 		if($client == '' OR $client == false){
 			// Set include only clients from partner
@@ -341,20 +303,36 @@ class Frontend {
 			}
 		}
 
+		// Set args
+		$args = array(
+			'limit'        => $amount,
+			'orderby'      => 'date',
+			'order'        => 'DESC',
+			'type'         => 'shop_order',
+			'return'       => 'objects',
+			'customer_id'  => $client,
+			'paginate'     => 'true',
+			'offset'       => $start,
+			'date_created' => $search[1]["search"]["value"]
+		);
+		// Only get orders from specific lang if national manager
+		if(NationalManager::isNationalManger(get_current_user_id())){
+
+			// add lang
+			$lang = NationalManager::getNationalMangerLang(get_current_user_id());
+			$args["meta_key"] = "wpml_language";
+			$args["meta_value"] = $lang[0];
+
+			// Add every order, from every client. :)
+			$include = false;
+
+		}
+
+
+
 		if(!is_numeric($search[0]["search"]["value"])) {
 
-			$query = new \WC_Order_Query( array(
-				'limit'        => $amount,
-				'orderby'      => 'date',
-				'order'        => 'DESC',
-				'type'         => 'shop_order',
-				'return'       => 'objects',
-				'customer_id'  => $client,
-				'paginate'     => 'true',
-				'offset'       => $start,
-				'meta_query'   => $meta_query,
-				'date_created' => $search[1]["search"]["value"]
-		) );
+			$query = new \WC_Order_Query( $args );
 
 			$orders = $query->get_orders();
 		}else{ // Single order
@@ -389,16 +367,16 @@ class Frontend {
 			$temp = array();
 			$temp["id"] = '#'.$o->get_id();
 			$temp["date"] = $o->get_date_created()->format ('d-m-Y');
-			$temp["status"] = $o->get_status();
+			$temp["status"] = wc_get_order_status_name($o->get_status());
 			$temp["amount"] = $o->get_formatted_order_total();
 				$user_data = get_userdata( $o->get_customer_id() );
-			$temp["client"] = $user_data->first_name. ' '.$user_data->last_name;
+			$temp["client"] = '<a href="?tab=orders&id='.$user_data->ID.'">'.$user_data->first_name. ' '.$user_data->last_name.'</a>';
 			// Customer of
 			$customer_id = Helpers::getCustomerByUserId($o->get_customer_id());
 			if($customer_id > 0 && $customer_id != '') {
 				$parent = Helpers::getParentByCustomerId($customer_id);
 				if($parent > 0) {
-					$username = affiliate_wp()->affiliates->get_affiliate_name( $parent );
+					$username = affwp_get_affiliate_name( $parent );
 					$parent   = "#" . $parent . " " . $username;
 				}else{
 					$parent = "";
@@ -409,7 +387,16 @@ class Frontend {
 
 
 			$temp["partner"] = $parent;
-			$temp["actions"] = '<a href="'.wp_nonce_url( admin_url( 'admin-ajax.php?action=generate_wpo_wcpdf&document_type=invoice&order_ids=' . $o->get_id() . '&my-account' ), 'generate_wpo_wcpdf' ).'"><button>'.__("Download factuur","ascension-shop").'</button></a>';
+			$temp["actions"] = '';
+
+			$document = wcpdf_get_document( "invoice", $o->get_id() );
+			$exists = method_exists($document, 'exists') ? $document->exists() : false;
+
+			// Add if exsists
+			if($exists != false) {
+				$temp["actions"] .= '<a href="' . wp_nonce_url( admin_url( 'admin-ajax.php?action=generate_wpo_wcpdf&document_type=invoice&order_ids=' . $o->get_id() . '&my-account' ), 'generate_wpo_wcpdf' ) . '"><button>' . __( "Download factuur", "ascension-shop" ) . '</button></a>';
+			}
+
 			$temp["actions"] .= ' <a href="'.$o->get_view_order_url().'"><button>'.__("Bekijk","ascension-shop").'</button></a>';
 			$returndata["data"][] = $temp;
 
@@ -419,47 +406,28 @@ class Frontend {
 
 	}
 
-	public function clientListForSelect2($request){
-
-		$search = $request["term"];
-		$amount = 200;
-		$start = 0;
-		$draw = 1;
-		$partner = "";
-
-		if(NationalManager::isNationalManger(get_current_user_id())){
-			$all = false;
-		}else{ // only get from the current partner
-
-			$all = true;
-
-		}
-
-		$returndata = self::loadClients($search,$amount,$start,$draw,$partner,$all);
-
-		// Create the response object
-		$response = new \WP_REST_Response( $returndata );
-
-		// Add a custom status code
-		$response->set_status( 201 );
-
-		// Return response
-		return $response;
-
-	}
-
 
 	public function triggerClientRest($request){
 
-		$search = $request["search"]["value"];
+		$search = $request["columns"][1]["search"]["value"];
 		$amount = $request["length"];
 		$start = $request["start"];
 		$draw = $request["draw"];
 
-
 		if(NationalManager::isNationalManger(get_current_user_id())){
-			$partner = $request["columns"][0]["search"]["value"];
-			$all = false;
+
+			// Only get the clients from given country
+			$partner = NationalManager::getNationalManagerCountryAff(get_current_user_id());
+			$other_partner = $request["columns"][0]["search"]["value"];
+			$sub = new SubAffiliate($partner);
+
+			// Check if this is partner of given country
+			if($sub->isSubAffiliateOf($other_partner) == true OR $partner === $other_partner){
+				$partner = $other_partner;
+			}
+
+			$all = true;
+
 		}else{ // only get from the current partner
 
 			$partner = affwp_get_affiliate_id();
@@ -474,7 +442,7 @@ class Frontend {
 
 		}
 
-		$returndata = self::loadClients($search,$amount,$start,$draw,$partner,$all);
+		$returndata = self::loadClients($search,$amount,$start,$draw,$partner,$all,false,true);
 
 		// Create the response object
 		$response = new \WP_REST_Response( $returndata );
@@ -487,7 +455,7 @@ class Frontend {
 
 	}
 
-	public static function loadClientsFromGivenPartner($partner,$all_clients=true){
+	public static function loadClientsFromGivenPartner($partner,$all_clients=true,$load_inactive=false){
 
 		$include = '';
 
@@ -496,7 +464,7 @@ class Frontend {
 				// Get customers by partner
 				$customers = affiliate_wp_lifetime_commissions()->integrations->get_customers_for_affiliate( $partner );
 			}else{ // Get all clients & clients from subs
-				$customers = Helpers::getAllCustomersFromPartnerAndSubs($partner);
+				$customers = Helpers::getAllCustomersFromPartnerAndSubs($partner,$load_inactive);
 			}
 
 
@@ -525,14 +493,85 @@ class Frontend {
 	 * @return array
 	 * @throws \Exception
 	 */
-	public static function loadClients($search, $amount,$start,$draw,$partner= null,$all_clients=false,$allow_partners = false){
+	public static function loadClients($search, $amount,$start,$draw,$partner= null,$all_clients=false,$allow_partners = false,$loadClientQuery = false){
 
 		global $wpdb;
 
+		// Get clients
+		$users = self::loadClientQuery($partner,$all_clients,$allow_partners,$amount,$start,$search,$loadClientQuery);
+		$users_result = $users->get_results();
+
+		// Setup all data
+		$returndata = array();
+		$returndata["draw"] = $draw++;
+		$returndata["recordsTotal"] = $users->get_total();
+		$returndata["recordsFiltered"] = $users->get_total();
+		$returndata["data"] = array();
+
+		// Get all users
+		foreach ($users_result as $customer){
+			$temp = array();
+			// Setup data
+			$user_data = get_userdata($customer);
+			$temp["id"] = $user_data->ID;
+			$temp["name"] = $user_data->first_name.' '. $user_data->last_name;
+			$temp["text"] = $temp["name"];
+			$t = new TemplateEngine();
+			$t->user_id = $user_data->ID;
+			$t->user = $user_data;
+
+			// Customer of
+			$customer_id = Helpers::getCustomerByUserId($customer);
+			if($customer_id > 0 && $customer_id != '') {
+				$parent = Helpers::getParentByCustomerId($customer_id);
+				if($parent > 0) {
+					$username = affwp_get_affiliate_name( $parent );
+					$parent   = "#" . $parent . " " . $username;
+				}else{
+					// Maybe sub partner?
+					$aff_id = affwp_get_affiliate_id($customer);
+
+					// Get sub parent
+					if($aff_id > 0) {
+						$sub = new SubAffiliate($aff_id);
+						$parent = $sub->getParentId();
+						$parent = affwp_get_affiliate_name($parent);
+					}else {
+						$parent = "";
+					}
+				}
+			}else{
+				$parent = "";
+			}
+
+
+			$temp["partner"] = $parent;
+			$temp["info"] = $t->display('national-manager/table/info.php');
+			$temp["discount"] = $t->display('national-manager/table/discount.php');;
+			$returndata["data"][] = $temp;
+		}
+
+		return $returndata;
+	}
+
+	/**
+	 * Query for loading clients based on multiple parameters
+	 * @param $partner
+	 * @param bool $all_clients
+	 * @param bool $allow_partners
+	 * @param int $amount
+	 * @param int $start
+	 * @param string $search
+	 *
+	 * @return bool|mixed|\WP_User_Query
+	 */
+	public static function loadClientQuery($partner,$all_clients=false,$allow_partners=false,$amount=10,$start=0,$search='',$loadInactive=false){
+
 		$include = '';
+		$users_result = false;
 
 		// If a partner is selected, add users
-		$include = self::loadClientsFromGivenPartner($partner,$all_clients);
+		$include = self::loadClientsFromGivenPartner($partner,$all_clients,$loadInactive);
 
 		if($allow_partners == false) {
 			// Exclude all partners
@@ -555,75 +594,66 @@ class Frontend {
 					'offset'     => $start,
 					'include'    => $include,
 					'meta_key'   => 'last_name',
-					'orderby'    => 'meta_value',
-					'meta_query' => array(
-						'relation' => 'OR',
-						array(
-							'key'     => 'first_name',
-							'value'   => $search,
-							'compare' => 'LIKE'
-						),
-						array(
-							'key'     => 'last_name',
-							'value'   => $search,
-							'compare' => 'LIKE'
-						),
-						array(
-							'key'     => 'billing_first_name',
-							'value'   => $search,
-							'compare' => 'LIKE'
-						)
-					)
+					'search'         => '*'.esc_attr( $search ).'*',
+					'fields' => 'id',
+					'search_columns' => array(
+						'display_name'
+					),
+					'orderby'    => 'meta_value'
 				)
 			);
+
+			// Set wp cache
+			wp_cache_set($caching_name,$users,'',60);
+
 		}else{ // set result as cached result
 			$users = $cache_result;
 		}
 
-		// Get the results
-		$users_result = $users->get_results();
 
-		// Setup all data
-		$returndata = array();
-		$returndata["draw"] = $draw++;
-		$returndata["recordsTotal"] = $users->get_total();
-		$returndata["recordsFiltered"] = $users->get_total();
-		$returndata["data"] = array();
+		return $users;
 
-		// Get all users
-		foreach ($users_result as $customer){
-			$temp = array();
-			// Setup data
-			$user_data = get_userdata($customer->ID);
-			$temp["id"] = $user_data->ID;
-			$temp["name"] = $user_data->first_name.' '. $user_data->last_name;
-			$temp["text"] = $temp["name"];
-			$t = new TemplateEngine();
-			$t->user_id = $user_data->ID;
-			$t->user = $user_data;
+	}
 
-			// Customer of
-			$customer_id = Helpers::getCustomerByUserId($customer->ID);
-			if($customer_id > 0 && $customer_id != '') {
-				$parent = Helpers::getParentByCustomerId($customer_id);
-				if($parent > 0) {
-					$username = affiliate_wp()->affiliates->get_affiliate_name( $parent );
-					$parent   = "#" . $parent . " " . $username;
-				}else{
-					$parent = "";
-				}
-			}else{
-				$parent = "";
-			}
+	public function clientSelectListRest($request){
 
-
-			$temp["partner"] = $parent;
-			$temp["info"] = $t->display('national-manager/table/info.php');
-			$temp["discount"] = $t->display('national-manager/table/discount.php');;
-			$returndata["data"][] = $temp;
+		// Get partner id
+		$partner = affwp_get_affiliate_id();
+		// National manager clients
+		if(NationalManager::isNationalManger(get_current_user_id())){
+			$partner = NationalManager::getNationalManagerCountryAff(get_current_user_id());
 		}
 
-		return $returndata;
+		$users = self::loadClientQuery($partner,true, false,5, 0, $request["search"]);
+
+		// The return data
+		$users = $users->get_results();
+
+		$returndata = array();
+		$returndata["items"] = array();
+
+		if(count($users) > 0) {
+			// Create a select list
+			foreach ( $users as $u ) {
+				$name      = get_user_meta( $u, "first_name", true );
+				$last_name = get_user_meta( $u, "last_name", true );
+
+				$temp          = array();
+				$temp["id"]    = $u;
+				$temp["text"]  = $name . " " . $last_name;
+				$returndata ["items"][] = $temp;
+			}
+		}
+
+		// Create the response object
+		$response = new \WP_REST_Response( $returndata );
+
+		// Add a custom status code
+		$response->set_status( 201 );
+
+		// Return response
+		return $response;
+
 	}
 
 
