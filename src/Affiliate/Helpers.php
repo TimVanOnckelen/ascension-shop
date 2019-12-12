@@ -9,6 +9,8 @@
 namespace AscensionShop\Affiliate;
 
 
+use AscensionShop\NationalManager\NationalManager;
+
 class Helpers
 {
 
@@ -343,7 +345,7 @@ class Helpers
 	 *
 	 * @return array
 	 */
-    public static function getAllCustomersFromPartnerAndSubs($aff_id,$addPartners = false,$allow_inactive = false){
+    public static function getAllCustomersFromPartnerAndSubs($aff_id,$addPartners = false,$allow_inactive = false,$everyone=false){
 
 	    global $wpdb;
 
@@ -351,7 +353,7 @@ class Helpers
 	    $childeren_mysql = "";
 
 	    $sub = new SubAffiliate($aff_id);
-	    $childeren = $sub->getAllChildren();
+	    $childeren = $sub->getAllChildren($allow_inactive,false,$everyone);
 
 	    if($childeren != null) {
 		    $childeren = self::getAllIdsFromSubs( $childeren );

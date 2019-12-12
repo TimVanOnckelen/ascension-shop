@@ -14,9 +14,20 @@ if(NationalManager::isNationalManger(get_current_user_id())){
 <div class="partnerArea-header">
     <div class="header">
         <label><?php _e("Klant","ascension-shop") ?></label>
+
+        <?php if(!isset($_GET["id"])){ ?>
         <select id="searchOrderByClient">
             <option value=""><?php _e("Alle klanten","ascension-shop") ?></option>
         </select>
+        <?php
+	        }else{
+	            $user_id = $_GET["id"];
+	            $first_name = get_user_meta($user_id,"first_name",true);
+		        $last_name = get_user_meta($user_id,"last_name",true);
+                // Show the current user
+		        echo "<h3>".$first_name.' '.$last_name."</h3>";
+            }
+            ?>
         <label>
 			<?php _e("Datum","ascension-shop"); ?>
         </label>

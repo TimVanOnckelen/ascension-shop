@@ -8,6 +8,7 @@
         $("#ascension-clients").select2({width:'100%',  allowClear: true, placeholder: "*"});
 
         $("#searchOrderByClient").select2({
+            allowClear: true, placeholder: "*",
             ajax: {
                 url: getClients.url,
                 'beforeSend': function ( xhr ) {
@@ -216,6 +217,23 @@
                             .draw();
                     }
                 });
+
+
+
+            }
+
+            if (index === 2) {
+                $("select#showAllSubs").on('change', function () {
+                    if (that.search() !== this.value) {
+                        that.settings()[0].jqXHR.abort();
+
+                        that
+                            .search(this.value)
+                            .draw();
+                    }
+                });
+
+
 
             }
 

@@ -8,10 +8,12 @@
     <?php
     $sub = new SubAffiliate(NationalManager::getNationalManagerCountryAff(get_current_user_id()));
     // Get all affiliates
-    $all_affiliates = $sub->getAllChildren(true,true);
+    $all_affiliates = $sub->getAllChildren(2,true,true);
 
     // Build an array of affiliate IDs and names for the drop down
     $affiliate_dropdown = array();
+    // Add self
+    $affiliate_dropdown[$sub->getId()] = $sub->getName();
 
     if ($all_affiliates && !empty($all_affiliates)) {
 
@@ -34,14 +36,16 @@
                     <option value="<?php echo esc_attr($affiliate_id); ?>"><?php echo esc_html($affiliate_name); ?></option>
 				<?php endforeach; ?>
             </select>
-            <label><?php _e( "Naam", "ascension-shop" ); ?></label>
+            <label for="showAllSubs"><?php _e("Toon klanten van partner & sub partners","ascension-shop"); ?></label>
+            <select id="showAllSubs">
+                <option value="1"><?php _e("Ja","ascension-shop"); ?></option>
+                <option value="0"><?php _e("Nee","ascension-shop"); ?></option>
+            </select>
+            <label><?php _e( "Naam klant", "ascension-shop" ); ?></label>
             <input type="text" id="searchByName" name="searchByName" placeholder="">
         </div>
         <div class="buttons">
-            <p>
-                <a href="?tab=add-client"><button><?php _e("Nieuwe klant aanmaken"); ?></button></a>
-            </p>
-            <p><a href="<?php echo $_SERVER['REQUEST_URI'].'?generateReport=clients';?>"><button><?php _e("Download als XLS","ascension-shop"); ?></button></a></p>
+            <p><a href="<?php echo $_SERVER['REQUEST_URI'].'?generateReport=clients&nm=true';?>"><button><?php _e("Download als XLS","ascension-shop"); ?></button></a></p>
         </div>
     </div>
 

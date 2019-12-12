@@ -130,21 +130,31 @@ class FrontendReports {
 		exit();
 	}
 
+	/**
+	 * Generate a client overview
+	 * @throws \PhpOffice\PhpSpreadsheet\Exception
+	 * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+	 */
 	private function generateClientOverview(){
 
+	    // Affiliate id
 		$affiliate_id = affwp_get_affiliate_id();
 
-		if(NationalManager::isNationalManger(get_current_user_id())){
+		if($_GET["nm"] == true) {
+            if (NationalManager::isNationalManger(get_current_user_id())) {
 
-			// Only get the clients from given country
-			$affiliate_id = NationalManager::getNationalManagerCountryAff(get_current_user_id());
+                // Only get the clients from given country
+                $affiliate_id = NationalManager::getNationalManagerCountryAff(get_current_user_id());
 
-		}
+            }
+        }
 
-        $customers = Helpers::getAllCustomersFromPartnerAndSubs($affiliate_id);
+        // get customers
+        $customers = Helpers::getAllCustomersFromPartnerAndSubs($affiliate_id,false,false,false);
 
         $include = array();
 
+        // Loop over customers
         if(count($customers)> 0) {
             // $include[] = get_current_user_id();
             foreach ( $customers as $c ) {

@@ -16,7 +16,7 @@
 	}
 
 	$sub          = new SubAffiliate($affiliate_id);
-	$partners     = $sub->getAllChildren();
+	$partners     = $sub->getAllChildren(2,false,true);
 	$partners_amount = count($partners);
 
 	printf(__("Overzicht van alle partners van de %s shop","ascension-shop"),$this->lang[0]); ?>
@@ -36,9 +36,6 @@
                 <input type="text" id="searchByName" name="searchByName" placeholder="">
             </div>
             <div class="buttons">
-                <p>
-                    <a href="?page=add-partner"><button><?php _e("Nieuwe partner aanmaken"); ?></button></a>
-                </p>
                 <p><a href="<?php echo $_SERVER['REQUEST_URI'].'?generateReport=partners';?>"><button><?php _e("Download als XLS","ascension-shop"); ?></button></a></p>
             </div>
         </div>
@@ -140,14 +137,12 @@
 <script>
     (function($){
         $(document).ready( function () {
-            var theTable = $('#partners-overview ').DataTable();
+            var partnersTable = $('#partners-overview ').DataTable();
 
-            $("#searchByName").on('keyup', function () {
-
-                theTable.columns( 1 ).search(this.value ).draw();
+            $("#searchByName").on('keyup clear change', function () {
+                partnersTable.search(this.value).draw();
             });
-
-        } );
+        });
 
     })(jQuery);
 </script>

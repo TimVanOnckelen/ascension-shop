@@ -238,13 +238,13 @@ class SubAffiliate
 		return false;
 	}
 
-	public function getAllChildren($active=2,$add_self = false){
+	public function getAllChildren($active=2,$add_self = false,$everyone=false){
 
 		$children = Helpers::getAllChilderen($this->affiliate_id);
 
 		if(isset($children)){
 
-			$this->loopOverChildren( $children, $this->affiliate_id, $active );
+			$this->loopOverChildren( $children, $this->affiliate_id, $active ,$everyone);
 			return $this->children_array;
 
 		}else{
@@ -256,7 +256,7 @@ class SubAffiliate
 	 * @param $children
 	 * @param $parent_id
 	 */
-	private function loopOverChildren($children, $parent_id,$status=2)
+	private function loopOverChildren($children, $parent_id,$status=2,$everyone=false)
 	{
 
 		if(isset($children) && is_array($children)) {
@@ -281,10 +281,13 @@ class SubAffiliate
 				}
 
 
-				// Do untill there are no children anymore
-				$children = Helpers::getAllChilderen( $c->affiliate_id );
-				if ( $children != false ) {
-					self::loopOverChildren( $children, $c->affiliate_id, $status );
+				// Add all sub partners of sub partners
+				if($everyone === true) {
+					// Do untill there are no children anymore
+					$children = Helpers::getAllChilderen( $c->affiliate_id );
+					if ( $children != false ) {
+						self::loopOverChildren( $children, $c->affiliate_id, $status );
+					}
 				}
 
 			}

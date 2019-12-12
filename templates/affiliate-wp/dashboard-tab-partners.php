@@ -13,6 +13,11 @@ $partners     = $sub->getAllChildren($_GET["status"]);
 $partners_amount = count($partners);
 ?>
 
+<style>
+    .dataTables_filter {
+        display: block;
+    }
+</style>
 <div id="affwp-affiliate-dashboard-lifetime-customers" class="printArea affwp-tab-content">
 
     <p>
@@ -132,13 +137,7 @@ $partners_amount = count($partners);
     (function($){
         $(document).ready( function () {
             $('#partners-overview ').DataTable({
-                autoWidth: false,
-                'columnDefs'        : [         // see https://datatables.net/reference/option/columns.searchable
-                    {
-                        'searchable'    : false,
-                        'targets'       : [2,3,4]
-                    },
-                ],
+                autoWidth: false
             });
         } );
 

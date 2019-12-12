@@ -16,6 +16,9 @@ class Frontend {
 		add_rewrite_endpoint( 'national-manager-area', EP_PAGES );
 		add_action( 'woocommerce_account_national-manager-area_endpoint', array($this,"nationalManagerArea") );
 
+		/**
+		 * Rest request to show all orders
+		 */
 		add_action( 'rest_api_init',  function() {
 			register_rest_route( 'ascension-shop/v1', '/orders/all', array(
 				'methods'  => 'GET',
@@ -34,6 +37,9 @@ class Frontend {
 
 		});
 
+		/**
+		 * Rest request to get all clients
+		 */
 		add_action( 'rest_api_init',  function() {
 			register_rest_route( 'ascension-shop/v1', '/clients/all', array(
 				'methods'  => 'GET',
@@ -52,6 +58,9 @@ class Frontend {
 
 		});
 
+		/**
+		 * REST request for clients in a select list
+		 */
 		add_action( 'rest_api_init',  function() {
 			register_rest_route( 'ascension-shop/v1', '/clients/select-list', array(
 				'methods'  => 'GET',
@@ -199,6 +208,13 @@ class Frontend {
 
 		switch ($_GET["page"]){
 
+			case "orders";
+				// Get clients template
+				$t = new TemplateEngine();
+				$t->lang = NationalManager::getNationalMangerLang(get_current_user_id());
+				$main->content = $t->display('national-manager/all-orders.php');
+				break;
+
 			case "clients";
 				// Get clients template
 				$t = new TemplateEngine();
@@ -225,7 +241,7 @@ class Frontend {
 			$t = new TemplateEngine();
 			$t->lang = NationalManager::getNationalMangerLang(get_current_user_id());
 			// $t->clients = $this->loadAllClientIdsForSearch();
-			$main->content = $t->display('national-manager/all-orders.php');
+			$main->content = $t->display('national-manager/all-clients.php');
 
 			break;
 
@@ -253,13 +269,14 @@ class Frontend {
 		$start = $request["start"];
 		$draw = $request["draw"];
 		$client = $request["columns"][4]["search"]["value"];
+		$referer = $request->get_header("referer");
 
 		// Get partner id
 		$partner = affwp_get_affiliate_id();
 		// Load clients
 		$include = self::loadClientsFromGivenPartner($partner);
 
-		$returndata = $this->loadOrdersRESTResponse($search,$amount,$start,$draw,$partner='',$client,$include);
+		$returndata = $this->loadOrdersRESTResponse($search,$amount,$start,$draw,$partner='',$client,$include,$referer);
 
 		// Create the response object
 		$response = new \WP_REST_Response( $returndata );
@@ -284,7 +301,7 @@ class Frontend {
 	 *
 	 * @return array
 	 */
-	public function loadOrdersRESTResponse($search,$amount,$start,$draw,$partner,$client,$include=false){
+	public function loadOrdersRESTResponse($search,$amount,$start,$draw,$partner,$client,$include=false,$ref=false){
 
 
 
@@ -293,7 +310,7 @@ class Frontend {
 			// Set include only clients from partner
 			$client = $include;
 
-			if(NationalManager::isNationalManger(get_current_user_id())){
+			if(NationalManager::isNationalManger(get_current_user_id()) && strpos($ref, 'affiliate-area') === false){
 				$client = '';
 			}
 		}else{
@@ -316,7 +333,7 @@ class Frontend {
 			'date_created' => $search[1]["search"]["value"]
 		);
 		// Only get orders from specific lang if national manager
-		if(NationalManager::isNationalManger(get_current_user_id())){
+		if(NationalManager::isNationalManger(get_current_user_id()) && strpos($ref, 'affiliate-area') === false){
 
 			// add lang
 			$lang = NationalManager::getNationalMangerLang(get_current_user_id());
@@ -370,7 +387,7 @@ class Frontend {
 			$temp["status"] = wc_get_order_status_name($o->get_status());
 			$temp["amount"] = $o->get_formatted_order_total();
 				$user_data = get_userdata( $o->get_customer_id() );
-			$temp["client"] = '<a href="?tab=orders&id='.$user_data->ID.'">'.$user_data->first_name. ' '.$user_data->last_name.'</a>';
+			$temp["client"] = '<a href="?tab=orders&id='.$user_data->ID.'">#'.$user_data->ID.' '.$user_data->first_name. ' '.$user_data->last_name.'</a>';
 			// Customer of
 			$customer_id = Helpers::getCustomerByUserId($o->get_customer_id());
 			if($customer_id > 0 && $customer_id != '') {
@@ -379,7 +396,16 @@ class Frontend {
 					$username = affwp_get_affiliate_name( $parent );
 					$parent   = "#" . $parent . " " . $username;
 				}else{
-					$parent = "";
+					$sub = affwp_get_affiliate_id($user_data->ID);
+					if($sub > 0){
+						$sub = new SubAffiliate($sub);
+						$sub_parent = $sub->getParentId();
+						$username = affwp_get_affiliate_name($sub_parent);
+						$parent   = "#" . $sub_parent . " " . $username;
+
+					}else {
+						$parent = "";
+					}
 				}
 			}else{
 				$parent = "";
@@ -397,7 +423,14 @@ class Frontend {
 				$temp["actions"] .= '<a href="' . wp_nonce_url( admin_url( 'admin-ajax.php?action=generate_wpo_wcpdf&document_type=invoice&order_ids=' . $o->get_id() . '&my-account' ), 'generate_wpo_wcpdf' ) . '"><button>' . __( "Download factuur", "ascension-shop" ) . '</button></a>';
 			}
 
-			$temp["actions"] .= ' <a href="'.$o->get_view_order_url().'"><button>'.__("Bekijk","ascension-shop").'</button></a>';
+			ob_start();
+			do_action( 'woocommerce_view_order', $o->get_id() );
+			$order_view = ob_get_contents();
+			ob_get_clean();
+
+			// View order link
+			$temp["actions"] .= ' <a href="#viewOrder'.$o->get_id().'" rel="modal:open"><button>'.__("Bekijk","ascension-shop").'</button></a>';
+			$temp["actions"] .= '<div class="modal" id="viewOrder'.$o->get_id().'">'.$order_view.'</div>';
 			$returndata["data"][] = $temp;
 
 		}
@@ -407,33 +440,51 @@ class Frontend {
 	}
 
 
-	public function triggerClientRest($request){
+    /**
+     * @param \WP_REST_Request $request
+     * @return \WP_REST_Response
+     * @throws \Exception
+     */
+	public function triggerClientRest(\WP_REST_Request $request){
 
+		$referer = $request->get_header("referer");
 		$search = $request["columns"][1]["search"]["value"];
 		$amount = $request["length"];
 		$start = $request["start"];
 		$draw = $request["draw"];
+		$everyone = false; // Load everyone
+		$all = false;
 
-		if(NationalManager::isNationalManger(get_current_user_id())){
+		// Is a national manager & not in partner area
+		if(NationalManager::isNationalManger(get_current_user_id()) && strpos($referer, 'affiliate-area') === false){
+
+			$all_string = $request["columns"][2]["search"]["value"];
+			// If empty, it's all
+			if($all_string === ""){
+				$all_string = 1;
+			}
+			// Set all
+			$all = boolval($all_string);
 
 			// Only get the clients from given country
 			$partner = NationalManager::getNationalManagerCountryAff(get_current_user_id());
 			$other_partner = $request["columns"][0]["search"]["value"];
+
 			$sub = new SubAffiliate($partner);
+			$everyone = true; // Load every sub client
 
 			// Check if this is partner of given country
-			if($sub->isSubAffiliateOf($other_partner) == true OR $partner === $other_partner){
+			if($other_partner > 0 && $partner !== $other_partner){
 				$partner = $other_partner;
+				$everyone = false;
 			}
-
-			$all = true;
 
 		}else{ // only get from the current partner
 
 			$partner = affwp_get_affiliate_id();
 			$other_partner = $request["columns"][0]["search"]["value"];
 			$sub = new SubAffiliate($partner);
-			$all = true;
+			$all = false;
 
 			if($sub->isSubAffiliateOf($other_partner) == true){
 				$partner = $other_partner;
@@ -442,7 +493,7 @@ class Frontend {
 
 		}
 
-		$returndata = self::loadClients($search,$amount,$start,$draw,$partner,$all,false,true);
+		$returndata = self::loadClients($search,$amount,$start,$draw,$partner,$all,false,$everyone);
 
 		// Create the response object
 		$response = new \WP_REST_Response( $returndata );
@@ -455,7 +506,7 @@ class Frontend {
 
 	}
 
-	public static function loadClientsFromGivenPartner($partner,$all_clients=true,$load_inactive=false){
+	public static function loadClientsFromGivenPartner($partner,$all_clients=true,$load_inactive=false,$everyone=false){
 
 		$include = '';
 
@@ -464,7 +515,7 @@ class Frontend {
 				// Get customers by partner
 				$customers = affiliate_wp_lifetime_commissions()->integrations->get_customers_for_affiliate( $partner );
 			}else{ // Get all clients & clients from subs
-				$customers = Helpers::getAllCustomersFromPartnerAndSubs($partner,$load_inactive);
+				$customers = Helpers::getAllCustomersFromPartnerAndSubs($partner, false,$load_inactive,$everyone);
 			}
 
 
@@ -493,12 +544,12 @@ class Frontend {
 	 * @return array
 	 * @throws \Exception
 	 */
-	public static function loadClients($search, $amount,$start,$draw,$partner= null,$all_clients=false,$allow_partners = false,$loadClientQuery = false){
+	public static function loadClients($search, $amount,$start,$draw,$partner= null,$all_clients=false,$allow_partners = false,$everyone = false){
 
 		global $wpdb;
 
 		// Get clients
-		$users = self::loadClientQuery($partner,$all_clients,$allow_partners,$amount,$start,$search,$loadClientQuery);
+		$users = self::loadClientQuery($partner,$all_clients,$allow_partners,$amount,$start,$search,true,$everyone);
 		$users_result = $users->get_results();
 
 		// Setup all data
@@ -565,15 +616,15 @@ class Frontend {
 	 *
 	 * @return bool|mixed|\WP_User_Query
 	 */
-	public static function loadClientQuery($partner,$all_clients=false,$allow_partners=false,$amount=10,$start=0,$search='',$loadInactive=false){
+	public static function loadClientQuery($partner,$all_clients=false,$allow_partners=false,$amount=10,$start=0,$search='',$loadInactive=false,$everyone=false){
 
 		$include = '';
 		$users_result = false;
 
 		// If a partner is selected, add users
-		$include = self::loadClientsFromGivenPartner($partner,$all_clients,$loadInactive);
+		$include = self::loadClientsFromGivenPartner($partner,$all_clients,$loadInactive,$everyone);
 
-		if($allow_partners == false) {
+		if($allow_partners === false) {
 			// Exclude all partners
 			$exclude = self::getPartnersUserIds();
 		}else{ // Allow partners
@@ -619,12 +670,16 @@ class Frontend {
 
 		// Get partner id
 		$partner = affwp_get_affiliate_id();
+		$everyone = true;
+		$referer = $request->get_header('referer');
+
 		// National manager clients
-		if(NationalManager::isNationalManger(get_current_user_id())){
+		if(NationalManager::isNationalManger(get_current_user_id())  && strpos($referer, 'affiliate-area') === false){
 			$partner = NationalManager::getNationalManagerCountryAff(get_current_user_id());
+			$everyone = true;
 		}
 
-		$users = self::loadClientQuery($partner,true, false,5, 0, $request["search"]);
+		$users = self::loadClientQuery($partner,true, false,5, 0, $request["search"], false, $everyone);
 
 		// The return data
 		$users = $users->get_results();
@@ -821,4 +876,6 @@ class Frontend {
 		}
 
 	}
+
+
 }

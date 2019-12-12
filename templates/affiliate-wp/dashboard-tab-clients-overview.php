@@ -7,44 +7,46 @@ use AscensionShop\NationalManager\NationalManager;
 
 $affiliate_id = affwp_get_affiliate_id();
 
-if(NationalManager::isNationalManger(get_current_user_id())){
-    $affiliate_id = NationalManager::getNationalManagerCountryAff(get_current_user_id());
-}
 $sub = new SubAffiliate($affiliate_id);
 ?>
 
 <div id="affwp-affiliate-dashboard-lifetime-customers" class="affwp-tab-content">
 
+
     <div class="partnerArea-header">
         <div class="header">
 
-	        <?php
-	        // Get all affiliates
-	        $all_affiliates = $sub->getAllChildren(2,true);
+            <?php
+		        // Get all affiliates
+		        $all_affiliates = $sub->getAllChildren( 2, true );
 
-	        // Build an array of affiliate IDs and names for the drop down
-	        $affiliate_dropdown = array();
 
-	        if ($all_affiliates && !empty($all_affiliates)) {
+		        // Build an array of affiliate IDs and names for the drop down
+		        $affiliate_dropdown = array();
+                $affiliate_dropdown[ $affiliate_id ] = affwp_get_affiliate_name($affiliate_id);
 
-		        foreach ($all_affiliates as $a) {
+		        if ( $all_affiliates && ! empty( $all_affiliates ) ) {
 
-			        if ($affiliate_name = $a->getName()) {
-				        $affiliate_dropdown[$a->getId()] = $affiliate_name;
+			        foreach ( $all_affiliates as $a ) {
+
+				        if ( $affiliate_name = $a->getName() ) {
+					        $affiliate_dropdown[ $a->getId() ] = $affiliate_name;
+				        }
+
 			        }
 
+
 		        }
-	        }
-	        ?>
-            <label for="searchByPartner"><?php _e("Filter op partner") ?></label>
-            <select id="searchByPartner">
-                <option value=""></option>
-		        <?php foreach ($affiliate_dropdown as $affiliate_id => $affiliate_name) : ?>
-                    <option value="<?php echo esc_attr($affiliate_id); ?>"><?php echo esc_html($affiliate_name); ?></option>
-		        <?php endforeach; ?>
-            </select>
-            <label><?php _e( "Naam", "ascension-shop" ); ?></label>
-            <input type="text" id="searchByName" name="searchByName" placeholder="">
+		        ?>
+                <label for="searchByPartner"><?php _e( "Filter op partner" ) ?></label>
+                <select id="searchByPartner">
+			        <?php foreach ( $affiliate_dropdown as $affiliate_id => $affiliate_name ) : ?>
+                        <option value="<?php echo esc_attr( $affiliate_id ); ?>"><?php echo esc_html( $affiliate_name ); ?></option>
+			        <?php endforeach; ?>
+                </select>
+                <label><?php _e( "Naam", "ascension-shop" ); ?></label>
+                <input type="text" id="searchByName" name="searchByName" placeholder="">
+
         </div>
         <div class="buttons">
             <p>
