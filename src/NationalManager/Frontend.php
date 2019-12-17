@@ -10,6 +10,8 @@ use AscensionShop\Lib\TemplateEngine;
 
 class Frontend {
 
+	private $ref;
+
 	function __construct() {
 
 		add_filter( 'woocommerce_account_menu_items', array( $this, 'addNationalManagerLink' ), 1000 );
@@ -420,7 +422,7 @@ class Frontend {
 
 			// Add if exsists
 			if($exists != false) {
-				$temp["actions"] .= '<a href="' . wp_nonce_url( admin_url( 'admin-ajax.php?action=generate_wpo_wcpdf&document_type=invoice&order_ids=' . $o->get_id() . '&my-account' ), 'generate_wpo_wcpdf' ) . '"><button>' . __( "Download factuur", "ascension-shop" ) . '</button></a>';
+				$temp["actions"] .= '<a target="_blank" href="' . wp_nonce_url( admin_url( 'admin-ajax.php?action=generate_wpo_wcpdf&document_type=invoice&order_ids=' . $o->get_id() . '&my-account' ), 'generate_wpo_wcpdf' ) . '"><button>' . __( "Download factuur", "ascension-shop" ) . '</button></a>';
 			}
 
 			ob_start();
@@ -452,8 +454,10 @@ class Frontend {
 		$amount = $request["length"];
 		$start = $request["start"];
 		$draw = $request["draw"];
+		$ref = $request->get_header("referer");
 		$everyone = false; // Load everyone
 		$all = false;
+		$searchStatus = $request["columns"][3]["search"]["value"];
 
 		// Is a national manager & not in partner area
 		if(NationalManager::isNationalManger(get_current_user_id()) && strpos($referer, 'affiliate-area') === false){
@@ -493,7 +497,7 @@ class Frontend {
 
 		}
 
-		$returndata = self::loadClients($search,$amount,$start,$draw,$partner,$all,false,$everyone);
+		$returndata = self::loadClients($search,$amount,$start,$draw,$partner,$all,false,$everyone,$ref,$searchStatus);
 
 		// Create the response object
 		$response = new \WP_REST_Response( $returndata );
@@ -544,12 +548,12 @@ class Frontend {
 	 * @return array
 	 * @throws \Exception
 	 */
-	public static function loadClients($search, $amount,$start,$draw,$partner= null,$all_clients=false,$allow_partners = false,$everyone = false){
+	public static function loadClients($search, $amount,$start,$draw,$partner= null,$all_clients=false,$allow_partners = false,$everyone = false,$ref = false,$status=true){
 
 		global $wpdb;
 
 		// Get clients
-		$users = self::loadClientQuery($partner,$all_clients,$allow_partners,$amount,$start,$search,true,$everyone);
+		$users = self::loadClientQuery($partner,$all_clients,$allow_partners,$amount,$start,$search,true,$everyone,$status);
 		$users_result = $users->get_results();
 
 		// Setup all data
@@ -595,9 +599,23 @@ class Frontend {
 				$parent = "";
 			}
 
-
+			$t->ref = $ref;
 			$temp["partner"] = $parent;
 			$temp["info"] = $t->display('national-manager/table/info.php');
+
+
+			/*
+			 * Get status of user
+			 */
+			$status = get_user_meta( $t->user_id, 'ascension_status', true );
+			if ( $status == "non-active" ) {
+				$status = __( 'Niet actief', "ascension-shop" );
+			} else {
+				$status = __( 'Actief', "ascension-shop" );
+			}
+
+
+			$temp["status"] = $status;
 			$temp["discount"] = $t->display('national-manager/table/discount.php');;
 			$returndata["data"][] = $temp;
 		}
@@ -616,7 +634,7 @@ class Frontend {
 	 *
 	 * @return bool|mixed|\WP_User_Query
 	 */
-	public static function loadClientQuery($partner,$all_clients=false,$allow_partners=false,$amount=10,$start=0,$search='',$loadInactive=false,$everyone=false){
+	public static function loadClientQuery($partner,$all_clients=false,$allow_partners=false,$amount=10,$start=0,$search='',$loadInactive=false,$everyone=false,$status=false){
 
 		$include = '';
 		$users_result = false;
@@ -636,6 +654,30 @@ class Frontend {
 		// Get caching value
 		$cache_result = wp_cache_get( $caching_name );
 
+		if($status == "non-active"){
+			$meta_q = array(
+				array(
+					'key'     => 'ascension_status',
+					'value'   => 'non-active',
+				)
+			);
+		}elseif($status == "active"){
+			$meta_q = array(
+				'relation' => "OR",
+				array(
+					'key'     => 'ascension_status',
+					'value'   => '',
+				),
+				array(
+					'key'     => 'ascension_status',
+					'compare' => 'NOT EXISTS',
+					'value'   => '',
+				),
+			);
+		}else{
+			$meta_q = array();
+		}
+
 		if(false === $cache_result) {
 			// Filter out users
 			$users = new \WP_User_Query(
@@ -650,7 +692,8 @@ class Frontend {
 					'search_columns' => array(
 						'display_name'
 					),
-					'orderby'    => 'meta_value'
+					'orderby'    => 'meta_value',
+					'meta_query'    => $meta_q
 				)
 			);
 

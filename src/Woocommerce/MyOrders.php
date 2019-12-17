@@ -23,6 +23,13 @@ class MyOrders
         add_action("woocommerce_view_order", array($this, "removeOrderFromParent"), 5, 1);
         add_filter("wpo_wcpdf_check_privs", array($this, "checkIfInvoiceIsAvailable"), 10, 2);
 	    add_filter( 'user_has_cap', array($this,"allowViewOrder"), 10, 3 );
+	    add_action('wp_enqueue_scripts',array($this,"addJs"),10);
+    }
+
+    public function addJs(){
+	    wp_enqueue_script('jquerymodal','https://cdnjs.cloudflare.com/ajax/libs/jquery-modal/0.9.1/jquery.modal.min.js');
+	    wp_enqueue_style('jquerymodal','https://cdnjs.cloudflare.com/ajax/libs/jquery-modal/0.9.1/jquery.modal.min.css');
+
     }
 
     public function allowViewOrder($allcaps,$cap,$args){

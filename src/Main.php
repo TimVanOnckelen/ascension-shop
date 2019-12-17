@@ -46,7 +46,7 @@ class Main
 
 
         // Locate wc template to overwrite
-        add_filter('woocommerce_locate_template', array($this, 'myplugin_woocommerce_locate_template'), 1, 100);
+        add_filter('woocommerce_locate_template', array($this, 'myplugin_woocommerce_locate_template'), 1, 1000);
 
         // Load global hooks
         $this->globalHooks();

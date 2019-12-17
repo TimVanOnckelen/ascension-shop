@@ -137,10 +137,10 @@
 <script>
     (function($){
         $(document).ready( function () {
-            var partnersTable = $('#partners-overview ').DataTable();
+            var thePartnersTable = $('#partners-overview ').DataTable();
 
             $("#searchByName").on('keyup clear change', function () {
-                partnersTable.search(this.value).draw();
+                thePartnersTable.columns( 1 ).search(this.value).draw();
             });
         });
 

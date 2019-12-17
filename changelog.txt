@@ -1,3 +1,7 @@
+V1.1.1
+**************
+- [fix] Multiple fixes on Partner Area
+
 v1.1
 **************
 - [new] updated commission overview on partner side

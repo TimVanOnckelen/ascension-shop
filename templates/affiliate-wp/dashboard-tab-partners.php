@@ -81,17 +81,7 @@ $partners_amount = count($partners);
                                 </div>
                                 <div class="buttons">
                                     <a href="#adress-user-<?php echo $partner->getUserId(); ?>" class="edit-user" rel="modal:open" data-id="<?php echo $partner->getUserId(); ?>"><?php _e("Adres","ascension-shop"); ?></a><br />
-							        <?php
-							        $user = new \WP_User($partner->getUserId());
-							        $adt_rp_key = get_password_reset_key($user);
-							        $user_login = $user->user_login;
-							        if(!is_wp_error($adt_rp_key)) {
-								        $rp_link = '<a href="' . wp_login_url() . "?action=rp&key=$adt_rp_key&login=" . rawurlencode( $user_login ) . '" target="_blank">' . __( "Reset wachtwoord", "ascension-shop" ) . '</a>';
-							        }else{
-								        $rp_link = __("Password change not available","ascension-shop");
-							        }
-							        echo $rp_link;
-							        ?>
+
                                 </div>
                             </div>
                             <div class="modal" id="user-edit-<?php echo $partner->getUserId(); ?>">

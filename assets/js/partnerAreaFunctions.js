@@ -197,12 +197,12 @@
                             return '#'+dataField+'<br /><a href="#user-edit-'+dataField+'" rel="modal:open" class="edit-user">'+partnerArea.editText+'</a>';
                         }},
                     {"data": "info"},
+                    {"data" : "status"},
                     {"data" : "partner"},
                     {"data": "discount"}
                 ],
             }
         );
-
 
         theTable.columns().every(function (index) {
             var that = this;
@@ -233,13 +233,30 @@
                     }
                 });
 
-
-
             }
 
             if (index === 1) {
 
                 $("#searchByName").on('keyup change', function () {
+
+                    theId = $(this).val();
+
+                    console.log(theId);
+                    if (that.search() !== this.value) {
+
+                        that.settings()[0].jqXHR.abort();
+
+                        that
+                            .search(theId)
+                            .draw();
+                    }
+
+                });
+            }
+
+            if (index === 3) {
+
+                $("#searchByStatus").on('keyup change', function () {
 
                     theId = $(this).val();
 

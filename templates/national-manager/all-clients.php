@@ -43,6 +43,12 @@
             </select>
             <label><?php _e( "Naam klant", "ascension-shop" ); ?></label>
             <input type="text" id="searchByName" name="searchByName" placeholder="">
+            <label for="searchByStatus"><?php _e("Status","ascension-shop"); ?></label>
+            <select id="searchByStatus">
+                <option value=""><?php _e("*","ascension-shop"); ?></option>
+                <option value="active"><?php _e("Actief","ascension-shop"); ?></option>
+                <option value="non-active"><?php _e("Niet actief","ascension-shop"); ?></option>
+            </select>
         </div>
         <div class="buttons">
             <p><a href="<?php echo $_SERVER['REQUEST_URI'].'?generateReport=clients&nm=true';?>"><button><?php _e("Download als XLS","ascension-shop"); ?></button></a></p>
@@ -55,6 +61,7 @@
         <tr>
             <th><?php _e("ID","ascension-shop") ?></th>
             <th width="40%"><?php _e("Gegevens","ascension-shop") ?></th>
+            <th><?php _e("Status","ascension-shop") ?></th>
             <th><?php _e("Klant van","ascension-shop") ?></th>
             <th width="20%"><?php _e("Korting","ascension-shop") ?></th>
         </tr>

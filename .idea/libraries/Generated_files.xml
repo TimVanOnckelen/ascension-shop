@@ -1,0 +1,17 @@
+<component name="libraryTable">
+  <library name="Generated files" type="javaScript">
+    <properties>
+      <sourceFilesUrls>
+        <item url="file://$PROJECT_DIR$/assets/js/ascension-affiliate-checkout.min.min.min.min.min.js" />
+        <item url="file://$PROJECT_DIR$/assets/js/partnerAreaFunctions.min.js" />
+        <item url="file://$PROJECT_DIR$/assets/js/partnerAreaFunctions.min.min.min.min.min.js" />
+      </sourceFilesUrls>
+    </properties>
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/assets/js/ascension-affiliate-checkout.min.min.min.min.min.js" />
+      <root url="file://$PROJECT_DIR$/assets/js/partnerAreaFunctions.min.js" />
+      <root url="file://$PROJECT_DIR$/assets/js/partnerAreaFunctions.min.min.min.min.min.js" />
+    </CLASSES>
+    <SOURCES />
+  </library>
+</component>
