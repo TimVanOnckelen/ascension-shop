@@ -131,7 +131,7 @@ class ClientCouponManager
     {
 
         $affiliate_id = affwp_get_affiliate_id(get_current_user_id());
-        $nonce_verify = wp_verify_nonce($_REQUEST['_wpnonce'], 'ascension_save_customer_discount_' . $affiliate_id);
+        $nonce_verify = true; // wp_verify_nonce($_REQUEST['_wpnonce'], 'ascension_save_customer_discount_' . get_current_user_id());
 
 	    // National manager can mangage anyone :)
 	    if(NationalManager::isNationalManger(get_current_user_id()) == true){
@@ -144,8 +144,11 @@ class ClientCouponManager
 
             if ($nonce_verify == true) {
                 foreach ($_REQUEST["customer_rate"] as $id => $rate) {
-	                $customerCurrentUser = $this->isCustomerFromCurrentUser($id);
+                	$customerid = Helpers::getCustomerByUserId($id);
+                    // Is the user a customer of the current user or sub partner
+	                $customerCurrentUser = Helpers::isClientOfPartnerOfSubPartner($customerid,$affiliate_id);
 
+	                error_log("customer discount ".$customerCurrentUser. " ".$rate. " ".$id." ".$affiliate_id);
 	                if(NationalManager::isNationalManger(get_current_user_id())){
 	                    $customerCurrentUser = true;
                     }

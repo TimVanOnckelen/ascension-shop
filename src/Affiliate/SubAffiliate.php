@@ -286,7 +286,7 @@ class SubAffiliate
 					// Do untill there are no children anymore
 					$children = Helpers::getAllChilderen( $c->affiliate_id );
 					if ( $children != false ) {
-						self::loopOverChildren( $children, $c->affiliate_id, $status );
+						self::loopOverChildren( $children, $c->affiliate_id, $status, $everyone );
 					}
 				}
 

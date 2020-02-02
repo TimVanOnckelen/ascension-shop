@@ -64,9 +64,17 @@ class FrontendDashboard
 		    // The fee total amount
 		    $fee_total += $item_fee->get_total();
 
-		    // The fee total tax amount
-		    $fee_total_tax += $item_fee->get_total_tax();
+		    if($order->get_total_tax() > 0) {
+			    // The fee total tax amount
+			    $fee_total_tax += $item_fee->get_total_tax();
+		    }
 	    }
+
+	    // Fix issue on zero vat
+	    if($order->get_total_tax() <= 0){
+	        $fee_total = 0;
+	        $fee_total_tax = 0;
+        }
 
 
         ?>
@@ -89,7 +97,7 @@ class FrontendDashboard
 		wp_enqueue_style("dataTables","//cdn.datatables.net/1.10.20/css/jquery.dataTables.min.css");
 		wp_enqueue_style("ascension-info-css", XE_ASCENSION_SHOP_PLUGIN_DIR . "/assets/css/refferal-order-info.min.css",null,"1.0.1.7");
 		wp_enqueue_script("sweetAlert","https://cdn.jsdelivr.net/npm/sweetalert2@8");
-		wp_enqueue_script("partnerAreaFunctions",XE_ASCENSION_SHOP_PLUGIN_DIR . "/assets/js/partnerAreaFunctions.min.js",array("jquery","sweetAlert"),'1.1.30');
+		wp_enqueue_script("partnerAreaFunctions",XE_ASCENSION_SHOP_PLUGIN_DIR . "/assets/js/partnerAreaFunctions.min.js",array("jquery","sweetAlert"),'1.2.3');
 
 
 

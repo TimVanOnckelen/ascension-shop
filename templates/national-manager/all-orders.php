@@ -37,14 +37,39 @@
         <div class="header">
 
 	        <?php if(!isset($_GET["id"]) && !isset($_GET["partner_id"])){ ?>
+                <label>
+			        <?php _e("Klant","ascension-shop"); ?>
+                </label>
                 <select id="searchOrderByClient">
                     <option value=""><?php _e("Alle klanten","ascension-shop") ?></option>
                 </select>
-                <select id="searchOrderByPartner">
-                    <option value=""><?php _e("Alle partners","ascension-shop") ?></option>
+                <label>
+			        <?php _e("Partner","ascension-shop"); ?>
+                </label>
+                <select id="searchByPartner">
+                    <option value=""><?php _e("*","ascension-shop") ?></option>
 			        <?php foreach ($affiliate_dropdown as $affiliate_id => $affiliate_name) : ?>
                         <option value="<?php echo esc_attr($affiliate_id); ?>"><?php echo esc_html($affiliate_name); ?></option>
 			        <?php endforeach; ?>
+                </select>
+                <label for="showAllSubs"><?php _e("Toon klanten van partner & sub partners","ascension-shop"); ?></label>
+                <select id="showAllSubs">
+                    <option value="0"><?php _e("Nee","ascension-shop"); ?></option>
+                    <option value="1"><?php _e("Ja","ascension-shop"); ?></option>
+                </select>
+                <label>
+			        <?php _e("Status","ascension-shop"); ?>
+                </label>
+                <select id="searchByStatus">
+                    <?php
+                    $order_statuses = wc_get_order_statuses();
+                    ?>
+                    <option value="">*</option>
+                    <?php
+                    foreach ($order_statuses as $key => $status){
+                        echo '<option value="'.$key.'">'.$status.'</option>';
+                    }
+                    ?>
                 </select>
 		        <?php
 	        }else{
@@ -66,6 +91,16 @@
 
     <table id="all-orders" class="affwp-table affwp-table-responsive">
         <thead>
+        <tr>
+            <th><input type="number" id="order-id-search" /> </th>
+            <th> </th>
+            <th></th>
+            <th></th>
+            <th>
+            </th>
+            <th></th>
+            <th></th>
+        </tr>
         <tr>
             <th><?php _e("ID","ascension-shop") ?></th>
             <th><?php _e("Datum","ascension-shop") ?></th>

@@ -54,7 +54,7 @@ $sub = new SubAffiliate($affiliate_id);
             </select>
         </div>
         <div class="buttons">
-            <p><a href="<?php echo $_SERVER['REQUEST_URI'].'?generateReport=clients';?>"><button><?php _e("Download als XLS","ascension-shop"); ?></button></a></p>
+            <p><a target="_blank" href="<?php echo get_site_url().'?generateReport=clients';?>"><button><?php _e("Download als XLS","ascension-shop"); ?></button></a></p>
         </div>
     </div>
 

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="PublishConfigData" autoUpload="Always" serverName="Dev Ascenssion">
+  <component name="PublishConfigData" serverName="Dev Ascenssion">
     <serverData>
       <paths name="68 Site">
         <serverdata>
@@ -12,7 +12,7 @@
       <paths name="Dev Ascenssion">
         <serverdata>
           <mappings>
-            <mapping deploy="/public_html/wp-content/plugins/ascension-shop" local="$PROJECT_DIR$" web="/" />
+            <mapping local="$PROJECT_DIR$" web="/" />
           </mappings>
         </serverdata>
       </paths>
@@ -38,6 +38,5 @@
         </serverdata>
       </paths>
     </serverData>
-    <option name="myAutoUpload" value="ALWAYS" />
   </component>
 </project>

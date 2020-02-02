@@ -112,7 +112,7 @@ class Frontend {
 			wp_enqueue_style("national-manager",XE_ASCENSION_SHOP_PLUGIN_DIR."/assets/css/national-manager.min.css",null,"1.0.12");
 			wp_deregister_script("select2");
 			wp_enqueue_script("select2","https://cdn.jsdelivr.net/npm/select2@4.0.12/dist/js/select2.min.js","jquery","1.0.1");
-			wp_enqueue_script("partnerAreaFunctions",XE_ASCENSION_SHOP_PLUGIN_DIR . "/assets/js/partnerAreaFunctions.min.js",array("jquery","sweetAlert","select2"),'1.1.30');
+			wp_enqueue_script("partnerAreaFunctions",XE_ASCENSION_SHOP_PLUGIN_DIR . "/assets/js/partnerAreaFunctions.min.js",array("jquery","sweetAlert","select2"),'1.2.3');
 
 			// Add vars to script
 			wp_localize_script( 'partnerAreaFunctions', 'partnerArea', array(
@@ -238,6 +238,13 @@ class Frontend {
 				$main->content = $t->display('national-manager/add-partner-form.php');
 				break;
 
+			case "commissions";
+				// Add partner template
+				$t = new TemplateEngine();
+				$t->lang = NationalManager::getNationalMangerLang(get_current_user_id());
+				$main->content = $t->display('national-manager/all-commisions.php');
+				break;
+
 			default;
 			// Get Orders template
 			$t = new TemplateEngine();
@@ -271,12 +278,19 @@ class Frontend {
 		$start = $request["start"];
 		$draw = $request["draw"];
 		$client = $request["columns"][4]["search"]["value"];
+		$searchAll = $request["columns"][5]["search"]["value"];
 		$referer = $request->get_header("referer");
 
 		// Get partner id
 		$partner = affwp_get_affiliate_id();
+
+
+			if($request["columns"][3]["search"]["value"] != null){
+				$partner = $request["columns"][3]["search"]["value"];
+			}
+
 		// Load clients
-		$include = self::loadClientsFromGivenPartner($partner);
+		$include = self::loadClientsFromGivenPartner($partner,$searchAll,true, $searchAll);
 
 		$returndata = $this->loadOrdersRESTResponse($search,$amount,$start,$draw,$partner='',$client,$include,$referer);
 
@@ -306,14 +320,15 @@ class Frontend {
 	public function loadOrdersRESTResponse($search,$amount,$start,$draw,$partner,$client,$include=false,$ref=false){
 
 
-
-
 		if($client == '' OR $client == false){
 			// Set include only clients from partner
 			$client = $include;
 
 			if(NationalManager::isNationalManger(get_current_user_id()) && strpos($ref, 'affiliate-area') === false){
-				$client = '';
+				// Add every order, from every client. :)
+				if($search[3]["search"]["value"] == null) { // Only when no partner is set
+					$client = '';
+				}
 			}
 		}else{
 			// Client not valid from current partner & != NM
@@ -334,6 +349,12 @@ class Frontend {
 			'offset'       => $start,
 			'date_created' => $search[1]["search"]["value"]
 		);
+
+		// Search by status if needed
+		if($search[2]["search"]["value"] != null){
+			$args["status"] = $search[2]["search"]["value"];
+		}
+
 		// Only get orders from specific lang if national manager
 		if(NationalManager::isNationalManger(get_current_user_id()) && strpos($ref, 'affiliate-area') === false){
 
@@ -341,9 +362,6 @@ class Frontend {
 			$lang = NationalManager::getNationalMangerLang(get_current_user_id());
 			$args["meta_key"] = "wpml_language";
 			$args["meta_value"] = $lang[0];
-
-			// Add every order, from every client. :)
-			$include = false;
 
 		}
 
@@ -389,7 +407,7 @@ class Frontend {
 			$temp["status"] = wc_get_order_status_name($o->get_status());
 			$temp["amount"] = $o->get_formatted_order_total();
 				$user_data = get_userdata( $o->get_customer_id() );
-			$temp["client"] = '<a href="?tab=orders&id='.$user_data->ID.'">#'.$user_data->ID.' '.$user_data->first_name. ' '.$user_data->last_name.'</a>';
+			$temp["client"] = '<a  target="_blank" href="?tab=orders&id='.$user_data->ID.'">#'.$user_data->ID.' '.$user_data->first_name. ' '.$user_data->last_name.'</a>';
 			// Customer of
 			$customer_id = Helpers::getCustomerByUserId($o->get_customer_id());
 			if($customer_id > 0 && $customer_id != '') {
@@ -490,7 +508,12 @@ class Frontend {
 			$sub = new SubAffiliate($partner);
 			$all = false;
 
-			if($sub->isSubAffiliateOf($other_partner) == true){
+			if($sub->isSubAffiliateOf($other_partner) === true){
+				$partner = $other_partner;
+				$all = false;
+			}
+
+			if($other_partner === $partner){
 				$partner = $other_partner;
 				$all = false;
 			}
@@ -510,6 +533,14 @@ class Frontend {
 
 	}
 
+	/**
+	 * @param $partner
+	 * @param bool $all_clients
+	 * @param bool $load_inactive
+	 * @param bool $everyone
+	 *
+	 * @return array|string
+	 */
 	public static function loadClientsFromGivenPartner($partner,$all_clients=true,$load_inactive=false,$everyone=false){
 
 		$include = '';
@@ -518,10 +549,10 @@ class Frontend {
 			if($all_clients == false) {
 				// Get customers by partner
 				$customers = affiliate_wp_lifetime_commissions()->integrations->get_customers_for_affiliate( $partner );
+
 			}else{ // Get all clients & clients from subs
 				$customers = Helpers::getAllCustomersFromPartnerAndSubs($partner, false,$load_inactive,$everyone);
 			}
-
 
 			$include = array();
 
@@ -719,10 +750,9 @@ class Frontend {
 		// National manager clients
 		if(NationalManager::isNationalManger(get_current_user_id())  && strpos($referer, 'affiliate-area') === false){
 			$partner = NationalManager::getNationalManagerCountryAff(get_current_user_id());
-			$everyone = true;
 		}
 
-		$users = self::loadClientQuery($partner,true, false,5, 0, $request["search"], false, $everyone);
+		$users = self::loadClientQuery($partner,true, false,100, 0, $request["search"], false, $everyone);
 
 		// The return data
 		$users = $users->get_results();
@@ -881,7 +911,7 @@ class Frontend {
 
 		if($event->post_status != 'publish'){
 			$ref = $_SERVER['REQUEST_URI'];
-			echo '<a href="https://ascension.eu/de/?post_type=event_listing&amp;p='.$event->ID.'" target="_blank">View</a>';
+			echo '<a target="_blank" href="https://ascension.eu/de/?post_type=event_listing&amp;p='.$event->ID.'" target="_blank">View</a>';
 			echo ' - <a href="?tab=events&ascension-event-approve='.$event->ID.'&ref='.$ref.'">Approve</a>';
 		}
 		if($event->post_status == 'publish'){

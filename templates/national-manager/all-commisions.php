@@ -3,8 +3,9 @@
 use AscensionShop\Affiliate\Helpers;
 use AscensionShop\Affiliate\SubAffiliate;
 use AscensionShop\Lib\TemplateEngine;
+use AscensionShop\NationalManager\NationalManager;
 
-$affiliate_id = affwp_get_affiliate_id();
+$affiliate_id = NationalManager::getNationalManagerCountryAff(get_current_user_id());
 $sub = new SubAffiliate($affiliate_id);
 
 if(!isset($_GET["partner"]) OR $_GET["partner"] == ''){

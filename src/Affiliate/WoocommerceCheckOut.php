@@ -55,7 +55,7 @@ class WoocommerceCheckOut
         add_filter('woocommerce_email_recipient_customer_on_hold_order', array($this, "sendEmailToParent"), 1, 2);
 
         // prevent saving customer data on checkout.
-        add_filter('woocommerce_checkout_update_customer_data', array($this,'onlySaveWhenOwnOrder'),10,2 );
+        // add_filter('woocommerce_checkout_update_customer_data', array($this,'onlySaveWhenOwnOrder'),10,2 );
         // add_filter('woocommerce_checkout_get_value','__return_empty_string',10);
 
 
@@ -92,7 +92,7 @@ class WoocommerceCheckOut
     {
 
         $aff_id = affwp_get_affiliate_id();
-
+		$everyone = false;
 
         // Show the clients logo
         if ($aff_id > 0) {
@@ -102,8 +102,15 @@ class WoocommerceCheckOut
 	        	return;
 	        }
 
+	        // If NM set
+	        // National manager clients
+	        if(NationalManager::isNationalManger(get_current_user_id())){
+		        $aff_id = NationalManager::getNationalManagerCountryAff(get_current_user_id());
+		        $everyone = true;
+	        }
+
 	        $t = new TemplateEngine();
-            $customers = Helpers::getAllCustomersFromPartnerAndSubs($aff_id,true);
+            $customers = Helpers::getAllCustomersFromPartnerAndSubs($aff_id,true,1,$everyone);
             usort($customers, function ($first, $second) {
                 return strcasecmp($first->first_name, $second->first_name);
             });

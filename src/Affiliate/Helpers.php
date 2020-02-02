@@ -345,7 +345,7 @@ class Helpers
 	 *
 	 * @return array
 	 */
-    public static function getAllCustomersFromPartnerAndSubs($aff_id,$addPartners = false,$allow_inactive = false,$everyone=false){
+    public static function getAllCustomersFromPartnerAndSubs($aff_id,$addPartners = false,$allow_inactive = 1,$everyone=false){
 
 	    global $wpdb;
 
@@ -427,6 +427,11 @@ class Helpers
 	    if($childeren != null) {
 		    $childeren = self::getAllIdsFromSubs( $childeren,$affiliate );
 		    $childeren_mysql = join( "','", $childeren );
+	    }
+
+	    // Always true
+	    if(NationalManager::isNationalManger(get_current_user_id())){
+	    	return true;
 	    }
 
 	    $query = $wpdb->get_results("SELECT affwp_customer_id FROM {$wpdb->prefix}affiliate_wp_customermeta WHERE meta_key='affiliate_id' AND meta_value IN ('{$childeren_mysql}') AND affwp_customer_id='{$client}'");

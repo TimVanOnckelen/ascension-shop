@@ -1,14 +1,32 @@
 <?php
 
+use AscensionShop\Affiliate\SubAffiliate;
 use AscensionShop\NationalManager\Frontend;
 use AscensionShop\NationalManager\NationalManager;
 
 // Get partner id
 $partner = affwp_get_affiliate_id();
-// National manager clients
-if(NationalManager::isNationalManger(get_current_user_id())){
-	$partner = NationalManager::getNationalManagerCountryAff(get_current_user_id());
+
+$sub = new SubAffiliate($partner);
+// Get all affiliates
+$all_affiliates = $sub->getAllChildren( 2, true, false );
+
+// Build an array of affiliate IDs and names for the drop down
+$affiliate_dropdown = array();
+// Add self
+$affiliate_dropdown[ $sub->getId() ] = $sub->getName();
+
+if ( $all_affiliates && ! empty( $all_affiliates ) ) {
+
+	foreach ( $all_affiliates as $a ) {
+
+		if ( $affiliate_name = $a->getName() ) {
+			$affiliate_dropdown[ $a->getId() ] = $affiliate_name;
+		}
+
+	}
 }
+
 
 ?>
 <div class="partnerArea-header">
@@ -28,6 +46,28 @@ if(NationalManager::isNationalManger(get_current_user_id())){
 		        echo "<h3>".$first_name.' '.$last_name."</h3>";
             }
             ?>
+        <label>
+		    <?php _e("Partner","ascension-shop"); ?>
+        </label>
+        <select id="searchByPartner">
+		    <?php foreach ($affiliate_dropdown as $affiliate_id => $affiliate_name) : ?>
+                <option value="<?php echo esc_attr($affiliate_id); ?>"><?php echo esc_html($affiliate_name); ?></option>
+		    <?php endforeach; ?>
+        </select>
+        <label>
+		    <?php _e("Status","ascension-shop"); ?>
+        </label>
+        <select id="searchByStatus">
+		    <?php
+		    $order_statuses = wc_get_order_statuses();
+		    ?>
+            <option value="">*</option>
+		    <?php
+		    foreach ($order_statuses as $key => $status){
+			    echo '<option value="'.$key.'">'.$status.'</option>';
+		    }
+		    ?>
+        </select>
         <label>
 			<?php _e("Datum","ascension-shop"); ?>
         </label>

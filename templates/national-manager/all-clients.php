@@ -51,7 +51,7 @@
             </select>
         </div>
         <div class="buttons">
-            <p><a href="<?php echo $_SERVER['REQUEST_URI'].'?generateReport=clients&nm=true';?>"><button><?php _e("Download als XLS","ascension-shop"); ?></button></a></p>
+            <p><a target="_blank" href="<?php echo get_site_url().'?generateReport=clients&nm=true';?>"><button><?php _e("Download als XLS","ascension-shop"); ?></button></a></p>
         </div>
     </div>
 

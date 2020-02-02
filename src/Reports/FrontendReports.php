@@ -57,9 +57,18 @@ class FrontendReports {
 
 		if(!NationalManager::isNationalManger(get_current_user_id())) {
 			$sub      = new SubAffiliate( $affiliate_id );
-			$partners = $sub->getAllChildren();
+			$partners = $sub->getAllChildren(2,true,false);
 		}else{
-			$partners = $this->getAllPartners();
+
+			if(NationalManager::isNationalManger(get_current_user_id())){
+
+				// Only get the clients from given country
+				$affiliate_id = NationalManager::getNationalManagerCountryAff(get_current_user_id());
+
+			}
+
+			$sub      = new SubAffiliate( $affiliate_id );
+			$partners = $sub->getAllChildren(2,true,true);
 		}
 
 		$partners_amount = count($partners);
@@ -150,7 +159,7 @@ class FrontendReports {
         }
 
         // get customers
-        $customers = Helpers::getAllCustomersFromPartnerAndSubs($affiliate_id,false,false,false);
+        $customers = Helpers::getAllCustomersFromPartnerAndSubs($affiliate_id,false,true,true);
 
         $include = array();
 
@@ -172,7 +181,7 @@ class FrontendReports {
 
 
         $data = array();
-		$data[0] = array("id" => __("ID", "woocommerce"), "first_name" => __("Voornaam", "woocommerce"), "last_name" => __("Achternaam", "woocommerce"),"email" => __("Email", "woocommerce"),"adress" => __("Adress", "woocommerce"), "postcode" => __("Postcode", "woocommerce") ,"phone"=> __("Telefoon"),"discount" => __("Korting"));
+		$data[0] = array("id" => __("ID", "woocommerce"), "first_name" => __("Voornaam", "woocommerce"), "last_name" => __("Achternaam", "woocommerce"),"email" => __("Email", "woocommerce"),"adress" => __("Adress", "woocommerce"), "postcode" => __("Postcode", "woocommerce") ,"phone"=> __("Telefoon"),"discount" => __("Korting"),"partnerOf" => __("Partner van"), "status" => __("Status"));
 
 		foreach ($users_result as $customer){
 
@@ -188,6 +197,43 @@ class FrontendReports {
 			$new["postcode"] = get_user_meta( $customer->user_id, 'billing_postcode', true );
 			$new["phone"] = get_user_meta( $customer->user_id, 'billing_phone', true );
 			$new["discount"] = get_user_meta($customer->user_id,"ascension_shop_affiliate_coupon",true);
+
+			// Customer of
+			$customer_id = $customer->customer_id;
+			if($customer_id > 0 && $customer_id != '') {
+				$parent = Helpers::getParentByCustomerId($customer_id);
+				if($parent > 0) {
+					$username = affwp_get_affiliate_name( $parent );
+					$parent   = "#" . $parent . " " . $username;
+				}else{
+					// Maybe sub partner?
+					$aff_id = affwp_get_affiliate_id($customer);
+
+					// Get sub parent
+					if($aff_id > 0) {
+						$sub = new SubAffiliate($aff_id);
+						$parent = $sub->getParentId();
+						$parent = affwp_get_affiliate_name($parent);
+					}else {
+						$parent = "";
+					}
+				}
+			}else{
+				$parent = "";
+			}
+
+			$new["partnerOf"] = $parent;
+
+			/*
+			* Get status of user
+			*/
+			$status = get_user_meta( $customer->user_id, 'ascension_status', true );
+			if ( $status == "non-active" ) {
+				$status = __( 'Niet actief', "ascension-shop" );
+			} else {
+				$status = __( 'Actief', "ascension-shop" );
+			}
+			$new["status"] = $status;
 
 			$data[] = $new;
 		}
@@ -213,7 +259,8 @@ class FrontendReports {
 			$sheet->setCellValue('F'.$counter,  $product["postcode"]);
 			$sheet->setCellValue('G'.$counter, $product["phone"]);
 			$sheet->setCellValue('H'.$counter, $product["discount"]);
-
+			$sheet->setCellValue('I'.$counter, $product["partnerOf"]);
+			$sheet->setCellValue('J'.$counter, $product["status"]);
 			if($counter > 2) {
 				$totals["total"] += $product["total"];
 				$totals["sub_total"] += $product["sub_total"];

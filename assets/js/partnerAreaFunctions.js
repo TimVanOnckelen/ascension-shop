@@ -85,6 +85,7 @@
                 processing: true,
                 serverSide: true,
                 ordering: false,
+                fixedHeader: true,
                 "aoSearchCols":
                     [null,
                         null,
@@ -125,16 +126,18 @@
 
             if (index === 0) {
 
-                $("#order-id-search").on('keyup change', function () {
+                $("#order-id-search").on('keypress', function (e) {
 
-                    theId = $(this).val();
+                    if(e.which === 13) { // Do on enter press
+                        theId = $(this).val();
 
-                    if (that.search() !== this.value) {
-                        that
-                            .search(theId)
-                            .draw();
+                        if (that.search() !== this.value) {
+                            that
+                                .search(theId)
+                                .draw();
+                        }
+
                     }
-
                 });
             }
 
@@ -158,10 +161,46 @@
                 });
             }
 
+            if (index === 2) {
+
+                $("#searchByStatus").on('change', function () {
+
+                    if (that.search() !== this.value) {
+                        that
+                            .search(this.value)
+                            .draw();
+                    }
+                });
+            }
+
+            if (index === 3) {
+
+                $("#searchByPartner").on('change', function () {
+
+                    console.log("Test");
+                    if (that.search() !== this.value) {
+                        that
+                            .search(this.value)
+                            .draw();
+                    }
+                });
+            }
 
             if (index === 4) {
 
                 $("#searchOrderByClient").on('change', function () {
+
+                    if (that.search() !== this.value) {
+                        that
+                            .search(this.value)
+                            .draw();
+                    }
+                });
+            }
+
+            if (index === 5) {
+
+                $("#showAllSubs").on('change', function () {
 
                     if (that.search() !== this.value) {
                         that
@@ -182,6 +221,7 @@
                 processing: true,
                 serverSide: true,
                 ordering: false,
+                fixedHeader: true,
                 ajax: {
                     'url' : partnerArea.url,
                     'type' : "GET",

@@ -1,6 +1,7 @@
 <form method="GET" id="ascension-filters" >
     <div class="partnerArea-header">
     <div class="header">
+        <input type="hidden" name="page" value="commissions" />
 	<input type="hidden" name="tab" value="commission-overview" />
 	<label for="from"><?php _e("Van","ascension-shop"); ?></label><input type="date" name="from" value="<?php echo $_GET["from"]; ?>" />
 	<label for="to"><?php _e("Tot","ascension-shop"); ?></label><input type="date" name="to" value="<?php echo $_GET["to"]; ?>" />
