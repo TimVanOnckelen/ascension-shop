@@ -74,8 +74,8 @@ class WoocommerceCheckOut
         // Only load on checkout as affiliate
         if (is_checkout() && $aff_id > 0) {
             wp_enqueue_style("ascension-shop-toggle", XE_ASCENSION_SHOP_PLUGIN_DIR . 'assets/css/toggles.min.css');
-            wp_enqueue_script("ascension-unserialize", XE_ASCENSION_SHOP_PLUGIN_DIR . 'assets/js/unserialize.min.js');
-            wp_enqueue_script("ascension-shop-checkout", XE_ASCENSION_SHOP_PLUGIN_DIR . 'assets/js/ascension-affiliate-checkout.min.js', null, '1.0.6');
+            wp_enqueue_script( "ascension-unserialize", XE_ASCENSION_SHOP_PLUGIN_DIR . 'assets/js/unserialize.min.js' );
+	        wp_enqueue_script( "ascension-shop-checkout", XE_ASCENSION_SHOP_PLUGIN_DIR . 'assets/js/ascension-affiliate-checkout.js', null, '1.3.4' );
             // Add details
             wp_localize_script('ascension-shop-checkout', 'ascension', array(
                 'root' => esc_url_raw(rest_url()),
@@ -203,29 +203,36 @@ class WoocommerceCheckOut
 
         } else {
 
-        	// Get parent of client
-	        $parent_client = Helpers::getParentByCustomerId($formData["customer"]);
-	        $parent_client = new SubAffiliate($parent_client);
-	        $is_child_of_partner = Helpers::isClientOfPartnerOfSubPartner($formData["customer"],$aff_id);
+	        // Customer is set, so check if it is customer of partner
+	        if ( $formData["customer"] > 0 ) {
+		        // Get parent of client
+		        $parent_client       = Helpers::getParentByCustomerId( $formData["customer"] );
+		        $parent_client       = new SubAffiliate( $parent_client );
+		        $is_child_of_partner = Helpers::isClientOfPartnerOfSubPartner( $formData["customer"], $aff_id );
 
-	           if($parent_client->getId() != $aff_id) {
-	           	    // Affiliate is making an order for an other affiliate OR client of other affiliate
-		           WC()->session->set( 'ascension_affiliate_client_id_order', $formData["customer"] );
-		           WC()->session->set('ascension_affiliate_who_pays_order', $formData["who_pays"]);
-		           WC()->session->set( 'ascension_affiliate_order_for_child_affiliate', $parent_client->getUserId() );
-		        } else{
-		        	// Just an order for itself
+		        if ( $parent_client->getId() != $aff_id ) {
+			        // Affiliate is making an order for an other affiliate OR client of other affiliate
+			        WC()->session->set( 'ascension_affiliate_client_id_order', $formData["customer"] );
+			        WC()->session->set( 'ascension_affiliate_who_pays_order', $formData["who_pays"] );
+			        WC()->session->set( 'ascension_affiliate_order_for_child_affiliate', $parent_client->getUserId() );
+		        } else {
+			        // Just an order for itself
 			        WC()->session->set( 'ascension_affiliate_client_id_order', 0 );
 			        WC()->session->set( 'ascension_affiliate_who_pays_order', false );
-		           WC()->session->set( 'ascension_affiliate_order_for_child_affiliate', false );
+			        WC()->session->set( 'ascension_affiliate_order_for_child_affiliate', false );
 
-	           }
+			        $data["original_partner"] = $parent_client->getId();
+		        }
 
+	        } else { // Just regular customer
+		        WC()->session->set( 'ascension_affiliate_client_id_order', false );
+		        WC()->session->set( 'ascension_affiliate_who_pays_order', false );
+		        WC()->session->set( 'ascension_affiliate_order_for_child_affiliate', false );
+	        }
 
-	        $data["original_partner"] = $parent_client->getId();
-            $data["customer"] = $this->setUpCustomerResponse($formData["customer"]);
+	        $data["customer"] = $this->setUpCustomerResponse( $formData["customer"] );
 
-            $data["status"] = true;
+	        $data["status"] = true;
         }
 
         // Add notices
@@ -278,31 +285,32 @@ class WoocommerceCheckOut
             $customer_id = get_current_user_id();
         }
 
-        $return = array();
-        $customer = new \WC_Customer($customer_id);
-        $return["billing_first_name"] = $customer->get_billing_first_name();
-        $return["billing_last_name"] = $customer->get_billing_last_name();
-        $return["billing_company"] = $customer->get_billing_company();
-        $return["billing_address_1"] = $customer->get_billing_address_1();
-        $return["billing_address_2"] = $customer->get_billing_address_2();
-        $return["billing_postcode"] = $customer->get_billing_postcode();
-        $return["billing_city"] = $customer->get_billing_city();
-        $return["billing_state"] = $customer->get_billing_state();
-        $return["billing_phone"] = $customer->get_billing_phone();
-        $return["billing_email"] = $customer->get_email();
-        // $return["vat_number"] = $customer->get_vat_number();
-        $return["shipping_first_name"] = $customer->get_shipping_first_name();
-        $return["shipping_last_name"] = $customer->get_shipping_last_name();
-        $return["shipping_company"] = $customer->get_shipping_company();
-        $return["shipping_address_1"] = $customer->get_shipping_address_1();
-        $return["shipping_address_2"] = $customer->get_shipping_address_2();
-        $return["shipping_postcode"] = $customer->get_shipping_postcode();
-        $return["shipping_city"] = $customer->get_shipping_city();
-        $return["shipping_state"] = $customer->get_shipping_state();
-        $return["vat_number"] = get_user_meta($customer_id, 'vat_number', true);
+        $return                       = array();
+	    $customer                     = new \WC_Customer( $customer_id );
+	    $return["billing_first_name"] = $customer->get_billing_first_name();
+	    $return["billing_last_name"]  = $customer->get_billing_last_name();
+	    $return["billing_company"]    = $customer->get_billing_company();
+	    $return["billing_address_1"]  = $customer->get_billing_address_1();
+	    $return["billing_address_2"]  = $customer->get_billing_address_2();
+	    $return["billing_postcode"]   = $customer->get_billing_postcode();
+	    $return["billing_city"]       = $customer->get_billing_city();
+	    $return["billing_state"]      = $customer->get_billing_state();
+	    $return["billing_phone"]      = $customer->get_billing_phone();
+	    $return["billing_country"]    = $customer->get_billing_country();
+	    $return["billing_email"]      = $customer->get_email();
+	    // $return["vat_number"] = $customer->get_vat_number();
+	    $return["shipping_first_name"] = $customer->get_shipping_first_name();
+	    $return["shipping_last_name"]  = $customer->get_shipping_last_name();
+	    $return["shipping_company"]    = $customer->get_shipping_company();
+	    $return["shipping_address_1"]  = $customer->get_shipping_address_1();
+	    $return["shipping_address_2"]  = $customer->get_shipping_address_2();
+	    $return["shipping_postcode"]   = $customer->get_shipping_postcode();
+	    $return["shipping_city"]       = $customer->get_shipping_city();
+	    $return["shipping_state"]      = $customer->get_shipping_state();
+	    $return["shipping_country"]    = $customer->get_shipping_country();
+	    $return["vat_number"]          = get_user_meta( $customer_id, 'vat_number', true );
 
-
-        return $return;
+	    return $return;
 
     }
 

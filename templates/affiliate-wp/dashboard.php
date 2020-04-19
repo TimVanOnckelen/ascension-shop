@@ -1,13 +1,16 @@
 <?php
+
+use AscensionShop\NationalManager\NationalManager;
+
 do_action( 'woocommerce_before_account_navigation' );
 ?>
 <div class="woocommerce">
-	<div class="woocommerce-account-wrapper row">
-		<div class="woodmart-my-account-sidebar col-md-3">
-			<nav class="woocommerce-MyAccount-navigation">
-				<ul>
+    <div class="woocommerce-account-wrapper row">
+        <div class="woodmart-my-account-sidebar col-md-3">
+            <nav class="woocommerce-MyAccount-navigation">
+                <ul>
 					<?php foreach ( wc_get_account_menu_items() as $endpoint => $label ) : ?>
-						<li class="<?php echo wc_get_account_menu_item_classes( $endpoint ); ?>">
+                        <li class="<?php echo wc_get_account_menu_item_classes( $endpoint ); ?>">
 							<a href="<?php echo esc_url( wc_get_account_endpoint_url( $endpoint ) ); ?>"><?php echo esc_html( $label ); ?></a>
 						</li>
 					<?php endforeach; ?>
@@ -63,22 +66,52 @@ do_action( 'woocommerce_before_account_navigation' );
 				 * @since 1.8.2 Added the `$active_tab` parameter.
 				 *
 				 * @param int|false $affiliate_id ID for the current affiliate.
-				 * @param string    $active_tab   Slug for the currently-active tab.
+				 * @param string $active_tab Slug for the currently-active tab.
 				 */
 				do_action( 'affwp_affiliate_dashboard_notices', affwp_get_affiliate_id(), $active_tab );
 				?>
 
-				<ul id="affwp-affiliate-dashboard-tabs">
+
+                <ul id="affwp-affiliate-dashboard-tabs">
+
 					<?php
+					if ( AscensionShop\NationalManager\NationalManager::isNationalManger( get_current_user_id() ) == true ) {
+
+						?>
+                        <li class="tab2 affwp-affiliate-dashboard-tab "><a
+                                    href="../mijn-account/national-manager-area/?page=clients"><label
+                                        for="tab2"><?php _e( "Klanten", "ascension-shop" ) ?> (NM)</label></a></li>
+                        <li class="tab2 affwp-affiliate-dashboard-tab"><a
+                                    href="../mijn-account/national-manager-area/?page=add-client"><label
+                                        for="tab2"><?php _e( "Klant toevoegen", "ascension-shop" ) ?> (NM)</label></a>
+                        </li>
+                        <li class="tab4 affwp-affiliate-dashboard-tab"><a
+                                    href="../mijn-account/national-manager-area/?page=commissions"><label
+                                        for="tab4"><?php _e( "Commissies", "ascension-shop" ) ?> (NM)</label></a></li>
+                        <li class="tab1 affwp-affiliate-dashboard-tab"><a
+                                    href="../mijn-account/national-manager-area/?page=orders"><label
+                                        for="tab1"><?php _e( "Bestellingen", "ascension-shop" ) ?> (NM)</a></label></li>
+                        <li class="tab3 affwp-affiliate-dashboard-tab"><a
+                                    href="../mijn-account/national-manager-area/?page=partners"><label
+                                        for="tab3"><?php _e( "Partners", "ascension-shop" ) ?> (NM)</label></a></li>
+                        <li class="tab4 affwp-affiliate-dashboard-tab"><a
+                                    href="../mijn-account/national-manager-area/?page=add-partner"><label
+                                        for="tab4"><?php _e( "Partner Toevoegen", "ascension-shop" ) ?> (NM)</label></a>
+                        </li>
+
+
+						<?php
+					}
 
 					$tabs = affwp_get_affiliate_area_tabs();
+
 
 					if ( $tabs ) {
 						foreach ( $tabs as $tab_slug => $tab_title ) : ?>
 							<?php if ( affwp_affiliate_area_show_tab( $tab_slug ) ) : ?>
-								<li class="affwp-affiliate-dashboard-tab<?php echo $active_tab == $tab_slug ? ' active' : ''; ?>">
-									<a href="<?php echo esc_url( affwp_get_affiliate_area_page_url( $tab_slug ) ); ?>"><?php echo $tab_title; ?></a>
-								</li>
+                                <li class="affwp-affiliate-dashboard-tab<?php echo $active_tab == $tab_slug ? ' active' : ''; ?>">
+                                    <a href="<?php echo esc_url( affwp_get_affiliate_area_page_url( $tab_slug ) ); ?>"><?php echo $tab_title; ?></a>
+                                </li>
 							<?php endif; ?>
 						<?php endforeach;
 					}

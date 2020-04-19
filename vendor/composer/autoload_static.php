@@ -182,6 +182,8 @@ class ComposerStaticInit7422202dbb1add0445e0ca349a683d50
         'AscensionShop\\Woocommerce\\MyOrders' => __DIR__ . '/../..' . '/src/Woocommerce/MyOrders.php',
         'AscensionShop\\Woocommerce\\Optimalizations' => __DIR__ . '/../..' . '/src/Woocommerce/Optimalizations.php',
         'AscensionShop\\Woocommerce\\OrderHooks' => __DIR__ . '/../..' . '/src/Woocommerce/OrderHooks.php',
+        'AscensionShop\\Woocommerce\\mails\\OrderMadeForClient' => __DIR__ . '/../..' . '/src/Woocommerce/mails/OrderMadeForClient.php',
+        'AscensionShop\\Woocommerce\\mails\\OrderMadeForClientWithPay' => __DIR__ . '/../..' . '/src/Woocommerce/mails/OrderMadeForClientWithPay.php',
         'AscensionShop\\Woocommerce\\mails\\PaymentReminderEmail' => __DIR__ . '/../..' . '/src/Woocommerce/mails/PaymentReminderEmail.php',
         'Complex\\Complex' => __DIR__ . '/..' . '/markbaker/complex/classes/src/Complex.php',
         'Complex\\Exception' => __DIR__ . '/..' . '/markbaker/complex/classes/src/Exception.php',

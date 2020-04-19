@@ -19,24 +19,31 @@
 				echo '<option value="'.$c->customer_id.'" '.$selected.'>'.$c->first_name.' '.$c->last_name.'</option>';
 			}
 			?>
-		</select>
-		<label for="direct">
-			<?php _e("Partner","ascension-shop"); ?>
-		</label>
-		<select name="partner" class="searchByPartner">
-			<option value=""><?php _e("Alle partners + eigen","ascension-shop");?></option>
+        </select>
+        <label for="direct">
+			<?php _e( "Partner", "ascension-shop" ); ?>
+        </label>
+        <select name="partner" class="searchByPartner">
+            <option value=""><?php _e( "Alle partners + eigen", "ascension-shop" ); ?></option>
 			<?php
 
-			$children = $this->sub->getAllChildren();
+			if ( $_GET["page"] === "commissions" && \AscensionShop\NationalManager\NationalManager::isNationalManger( get_current_user_id() ) ) {
 
-			foreach($children as $c){
-				$name = affwp_get_affiliate_name($c->getId());
-				echo '<option '.selected($name,$_GET["partner"]).' value="'.$c->getId().'">'.$name.'</option>';
+				$children = $this->sub->getAllChildren( 2, false, true );
+			} else {
+
+				$children = $this->sub->getAllChildren();
+			}
+
+
+			foreach ( $children as $c ) {
+				$name = affwp_get_affiliate_name( $c->getId() );
+				echo '<option ' . selected( $name, $_GET["partner"] ) . ' value="' . $c->getId() . '">' . $name . '</option>';
 			}
 
 
 			?>
-		</select>
+        </select>
 	</p>
 
     </div>

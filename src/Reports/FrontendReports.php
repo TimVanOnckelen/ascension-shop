@@ -68,24 +68,34 @@ class FrontendReports {
 			}
 
 			$sub      = new SubAffiliate( $affiliate_id );
-			$partners = $sub->getAllChildren(2,true,true);
+			$partners = $sub->getAllChildren( 2, true, true );
 		}
 
-		$partners_amount = count($partners);
+		$partners_amount = count( $partners );
 
-		$data = array();
-		$data[0] = array("id" => __("ID", "woocommerce"), "name" => __("Voornaam", "woocommerce"), "email" => __("Email", "woocommerce"),"adress" => __("Adress", "woocommerce"), "postcode" => __("Postcode", "woocommerce") ,"phone"=> __("Telefoon"),"commission" => __("Commissie %"),"status"=>__("Status"));
+		$data    = array();
+		$data[0] = array( "id"         => __( "ID", "woocommerce" ),
+		                  "name"       => __( "Voornaam", "woocommerce" ),
+		                  "email"      => __( "Email", "woocommerce" ),
+		                  "adress"     => __( "Adress", "woocommerce" ),
+		                  "gemeente"   => __( "Gemeente", "woocommerce" ),
+		                  "postcode"   => __( "Postcode", "woocommerce" ),
+		                  "phone"      => __( "Telefoon" ),
+		                  "commission" => __( "Commissie %" ),
+		                  "status"     => __( "Status" )
+		);
 
-		foreach ($partners as $partner){
-			$new = array();
-			$new["id"] = $partner->getId();
-			$new["name"] = get_user_meta( $partner->getUserId(), 'first_name', true ). ' '.get_user_meta( $partner->getUserId(), 'last_name', true );;
-			$new["email"] = $partner->getEmail();
-			$new["adress"] = get_user_meta( $partner->getUserId(), 'billing_address_1', true );
-			$new["postcode"] = get_user_meta( $partner->getUserId(), 'billing_postcode', true );
-			$new["phone"] = get_user_meta( $partner->getUserId(), 'billing_phone', true );
+		foreach ( $partners as $partner ) {
+			$new         = array();
+			$new["id"]   = $partner->getId();
+			$new["name"] = get_user_meta( $partner->getUserId(), 'first_name', true ) . ' ' . get_user_meta( $partner->getUserId(), 'last_name', true );;
+			$new["email"]      = $partner->getEmail();
+			$new["adress"]     = get_user_meta( $partner->getUserId(), 'billing_address_1', true );
+			$new["gemeente"]   = get_user_meta( $partner->getUserId(), 'billing_city', true );
+			$new["postcode"]   = get_user_meta( $partner->getUserId(), 'billing_postcode', true );
+			$new["phone"]      = get_user_meta( $partner->getUserId(), 'billing_phone', true );
 			$new["commission"] = $partner->getUserRate();
-			$new["status"] = $partner->getStatus(true);
+			$new["status"]     = $partner->getStatus( true );
 
 			$data[] = $new;
 		}
@@ -102,18 +112,19 @@ class FrontendReports {
 
 		$totals = array();
 
-		foreach ($data as $product){
-			$sheet->setCellValue('A'.$counter, $product["id"]);
-			$sheet->setCellValue('B'.$counter, $product["name"]);
-			$sheet->setCellValue('C'.$counter,  $product["email"]);
-			$sheet->setCellValue('D'.$counter,  $product["adress"]);
-			$sheet->setCellValue('E'.$counter,  $product["postcode"]);
-			$sheet->setCellValue('F'.$counter, $product["phone"]);
-			$sheet->setCellValue('G'.$counter, $product["commission"]);
-			$sheet->setCellValue('H'.$counter, $product["status"]);
+		foreach ($data as $product) {
+			$sheet->setCellValue( 'A' . $counter, $product["id"] );
+			$sheet->setCellValue( 'B' . $counter, $product["name"] );
+			$sheet->setCellValue( 'C' . $counter, $product["email"] );
+			$sheet->setCellValue( 'D' . $counter, $product["adress"] );
+			$sheet->setCellValue( 'E' . $counter, $product["gemeente"] );
+			$sheet->setCellValue( 'F' . $counter, $product["postcode"] );
+			$sheet->setCellValue( 'G' . $counter, $product["phone"] );
+			$sheet->setCellValue( 'H' . $counter, $product["commission"] );
+			$sheet->setCellValue( 'I' . $counter, $product["status"] );
 
 
-			$counter++;
+			$counter ++;
 		}
 
 		// Set header bold
@@ -173,36 +184,50 @@ class FrontendReports {
             $include[] = 0;
         }
 
-        $users = new \WP_User_Query(
-                array('include' => $include,
-                    'number' => -1)
-        );
-        $users_result = $users->get_results();
+		$users        = new \WP_User_Query(
+			array(
+				'include' => $include,
+				'number'  => - 1
+			)
+		);
+		$users_result = $users->get_results();
 
 
-        $data = array();
-		$data[0] = array("id" => __("ID", "woocommerce"), "first_name" => __("Voornaam", "woocommerce"), "last_name" => __("Achternaam", "woocommerce"),"email" => __("Email", "woocommerce"),"adress" => __("Adress", "woocommerce"), "postcode" => __("Postcode", "woocommerce") ,"phone"=> __("Telefoon"),"discount" => __("Korting"),"partnerOf" => __("Partner van"), "status" => __("Status"));
+		$data    = array();
+		$data[0] = array( "id"         => __( "ID", "woocommerce" ),
+		                  "first_name" => __( "Voornaam", "woocommerce" ),
+		                  "last_name"  => __( "Achternaam", "woocommerce" ),
+		                  "email"      => __( "Email", "woocommerce" ),
+		                  "adress"     => __( "Adress", "woocommerce" ),
+		                  "gemeente"   => __( "City", "woocommerce" ),
+		                  "postcode"   => __( "Postcode", "woocommerce" ),
+		                  "phone"      => __( "Telefoon" ),
+		                  "discount"   => __( "Korting" ),
+		                  "partnerOf"  => __( "Partner van" ),
+		                  "status"     => __( "Status" )
+		);
 
-		foreach ($users_result as $customer){
+		foreach ( $users_result as $customer ) {
 
-		    $customer = Helpers::getCustomerByUserId($customer->ID);
-		    $customer = affwp_get_customer($customer);
+			$customer = Helpers::getCustomerByUserId( $customer->ID );
+			$customer = affwp_get_customer( $customer );
 
-			$new = array();
-			$new["id"] = $customer->customer_id;
+			$new               = array();
+			$new["id"]         = $customer->customer_id;
 			$new["first_name"] = $customer->first_name;
-			$new["last_name"] = $customer->last_name;
-			$new["email"] = $customer->email;
-			$new["adress"] = get_user_meta( $customer->user_id, 'billing_address_1', true );
-			$new["postcode"] = get_user_meta( $customer->user_id, 'billing_postcode', true );
-			$new["phone"] = get_user_meta( $customer->user_id, 'billing_phone', true );
-			$new["discount"] = get_user_meta($customer->user_id,"ascension_shop_affiliate_coupon",true);
+			$new["last_name"]  = $customer->last_name;
+			$new["email"]      = $customer->email;
+			$new["adress"]     = get_user_meta( $customer->user_id, 'billing_address_1', true );
+			$new["gemeente"]   = get_user_meta( $customer->user_id, 'billing_city', true );
+			$new["postcode"]   = get_user_meta( $customer->user_id, 'billing_postcode', true );
+			$new["phone"]      = get_user_meta( $customer->user_id, 'billing_phone', true );
+			$new["discount"]   = get_user_meta( $customer->user_id, "ascension_shop_affiliate_coupon", true );
 
 			// Customer of
 			$customer_id = $customer->customer_id;
-			if($customer_id > 0 && $customer_id != '') {
-				$parent = Helpers::getParentByCustomerId($customer_id);
-				if($parent > 0) {
+			if ( $customer_id > 0 && $customer_id != '' ) {
+				$parent = Helpers::getParentByCustomerId( $customer_id );
+				if ( $parent > 0 ) {
 					$username = affwp_get_affiliate_name( $parent );
 					$parent   = "#" . $parent . " " . $username;
 				}else{
@@ -250,24 +275,25 @@ class FrontendReports {
 
 		$totals = array();
 
-		foreach ($data as $product){
-			$sheet->setCellValue('A'.$counter, $product["id"]);
-			$sheet->setCellValue('B'.$counter, $product["first_name"]);
-			$sheet->setCellValue('C'.$counter, $product["last_name"]);
-			$sheet->setCellValue('D'.$counter,  $product["email"]);
-			$sheet->setCellValue('E'.$counter,  $product["adress"]);
-			$sheet->setCellValue('F'.$counter,  $product["postcode"]);
-			$sheet->setCellValue('G'.$counter, $product["phone"]);
-			$sheet->setCellValue('H'.$counter, $product["discount"]);
-			$sheet->setCellValue('I'.$counter, $product["partnerOf"]);
-			$sheet->setCellValue('J'.$counter, $product["status"]);
-			if($counter > 2) {
-				$totals["total"] += $product["total"];
-				$totals["sub_total"] += $product["sub_total"];
+		foreach ($data as $product) {
+			$sheet->setCellValue( 'A' . $counter, $product["id"] );
+			$sheet->setCellValue( 'B' . $counter, $product["first_name"] );
+			$sheet->setCellValue( 'C' . $counter, $product["last_name"] );
+			$sheet->setCellValue( 'D' . $counter, $product["email"] );
+			$sheet->setCellValue( 'E' . $counter, $product["adress"] );
+			$sheet->setCellValue( 'F' . $counter, $product["gemeente"] );
+			$sheet->setCellValue( 'G' . $counter, $product["postcode"] );
+			$sheet->setCellValue( 'H' . $counter, $product["phone"] );
+			$sheet->setCellValue( 'I' . $counter, $product["discount"] );
+			$sheet->setCellValue( 'J' . $counter, $product["partnerOf"] );
+			$sheet->setCellValue( 'K' . $counter, $product["status"] );
+			if ( $counter > 2 ) {
+				$totals["total"]        += $product["total"];
+				$totals["sub_total"]    += $product["sub_total"];
 				$totals["total_weight"] += $product["total_weight"];
 			}
 
-			$counter++;
+			$counter ++;
 		}
 
 		// Set header bold

@@ -46,7 +46,7 @@
         ascensionApiCall("ascension/v1/add/order/customer", {data: {customer: customer_id,who_pays:who_pays}}, "POST", function (data) {
 
             // reset form data
-            $("form.checkout").find("input, textarea").val("");
+            $(".woocommerce-billing-fields").find("input, textarea").val("");
 
             $("#ascension-who-pays-container").show();
 
@@ -58,20 +58,20 @@
 
                 //  $( document.body ).trigger( 'update_checkout' );
 
-                var shallowEncoded = $.param( data.customer, true );
-                var shallowDecoded = decodeURIComponent( shallowEncoded );
-
+                var shallowEncoded = $.param(data.customer, true);
+                var shallowDecoded = decodeURIComponent(shallowEncoded);
+                var object = serToObject(shallowDecoded);
                 // Reload price :)
 
-                $("form.checkout").unserializeForm(shallowDecoded);
-
+                $(".woocommerce-billing-fields").unserializeForm(shallowDecoded);
+                console.log(shallowDecoded);
+                $("#billing_country").val(object["billing_country"]).trigger("change");
 
 
             } else { // error found!
-                $(".woocommerce-checkout").unserializeForm(formCache);
+                $(".woocommerce-billing-fields").unserializeForm(formCache);
+                $("#billing_country").val(object["billing_country"]).trigger("change");
                 // Reload price :)
-                $( document.body ).trigger( 'update_checkout' );
-                // $( document.body ).trigger( 'update_checkout' );
 
             }
 
@@ -141,8 +141,9 @@
                 // Reset customer
                 loadCustomer(0,0);
 
-                if(formCache){
-                    $(".woocommerce-checkout").unserializeForm(formCache);
+                if(formCache) {
+                    $(".woocommerce-billing-fields").unserializeForm(formCache);
+                    $("#billing_country").val(formCache["billing_country"]).trigger("change");
                 }
             }
         });
@@ -150,21 +151,34 @@
     }
 
 
-    function addLoader(){
+    function addLoader() {
         $(".woocommerce").prepend('<div class="ascension-loader"></div>');
     }
 
-    function removeLoader(){
+    function removeLoader() {
         $(".ascension-loader").remove();
     }
 
+    function serToObject(vals) {
+        vals = vals.split("&");
 
-    $(document).on("ready",function () {
+        var serialized_values = [];
+        $.each(vals, function () {
+            var properties = this.split("=");
 
-        $("#ascension-clients").select2({width:'100%',  allowClear: true, placeholder: "*"});
+            serialized_values[properties[0].replace(/\+/g, " ")] = decodeURI(properties[1].replace(/\+/g, " "));
+        });
+
+        return serialized_values;
+
+    }
+
+    $(document).on("ready", function () {
+
+        $("#ascension-clients").select2({width: '100%', allowClear: true, placeholder: "*"});
 
         // Reset on every refresh
-        loadCustomer(0,0);
+        loadCustomer(0, 0);
 
         // Toggle watcher
         toggleWatcher();

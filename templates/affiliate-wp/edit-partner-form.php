@@ -22,28 +22,40 @@ echo admin_url('admin-post.php'); ?>" style="display: none;" id="edit-user-<?php
     <select name="country" id="country">
         <option value=""></option>
         <?php
-		$countries_obj   = new \WC_Countries();
-		$countries   = $countries_obj->__get('countries');
-		$user_country = get_user_meta( $this->partner->getUserId(), 'billing_country', true );
+        $countries_obj = new \WC_Countries();
+        $countries     = $countries_obj->__get( 'countries' );
+        $user_country  = get_user_meta( $this->partner->getUserId(), 'billing_country', true );
 
-		foreach($countries as $id => $c){
-			echo '<option value="'.$id.'" '.selected($id,$user_country).'>'.$c.'</option>';
-		}
-		?>
+        foreach ( $countries as $id => $c ) {
+	        echo '<option value="' . $id . '" ' . selected( $id, $user_country ) . '>' . $c . '</option>';
+        }
+        ?>
     </select>
-	<label for="phone"><?php _e("Telefoon","ascension-shop"); ?></label>
-	<input type="text" name="phone" id="phone" value="<?php echo get_user_meta( $this->partner->getUserId(), 'billing_phone', true ); ?>" />
-    <label for="vat"><?php _e("Bedrijf","ascension-shop"); ?></label>
-    <input type="text" name="company" id="company" value="<?php echo get_user_meta( $this->partner->getUserId(), 'billing_company', true );?>"/>
-    <label for="vat"><?php _e("BTW nummer","ascension-shop"); ?></label>
-    <input type="text" name="vat" id="vat"  value="<?php echo get_user_meta( $this->partner->getUserId(), 'vat_number', true ); ?>"  />
+    <label for="phone"><?php _e( "Telefoon", "ascension-shop" ); ?></label>
+    <input type="text" name="phone" id="phone" required
+           value="<?php echo get_user_meta( $this->partner->getUserId(), 'billing_phone', true ); ?>"/>
+    <label for="vat"><?php _e( "Bedrijf", "ascension-shop" ); ?></label>
+    <input type="text" name="company" id="company"
+           value="<?php echo get_user_meta( $this->partner->getUserId(), 'billing_company', true ); ?>"/>
+    <label for="vat"><?php _e( "BTW nummer", "ascension-shop" ); ?></label>
+    <input type="text" name="vat" id="vat"
+           value="<?php echo get_user_meta( $this->partner->getUserId(), 'vat_number', true ); ?>"/>
+    <label for="vat"><?php _e( "Status", "ascension-shop" ); ?></label>
+    <select name="ascension_status" id="ascension_status">
+		<?php $status = $this->partner->getStatus(); ?>
+        <option value="1"><?php _e( "Actief", "ascension-shop" ); ?></option>
+        <option value="0" <?php if ( $status == "0" ) {
+			echo "SELECTED";
+		} ?>><?php _e( "Niet actief", "ascension-shop" ); ?></option>
+    </select>
 	<?php
 
-	if ( NationalManager::isNationalManger(get_current_user_id()) ) {
+	if ( NationalManager::isNationalManger( get_current_user_id() ) ) {
 
-		$all_affiliates = affiliate_wp()->affiliates->get_affiliates( array( 'number'  => 0,
-		                                                                     'orderby' => 'name',
-		                                                                     'order'   => 'ASC'
+		$all_affiliates = affiliate_wp()->affiliates->get_affiliates( array(
+			'number'  => 0,
+			'orderby' => 'name',
+			'order'   => 'ASC'
 		) );
 		?>
         <label for="ascension_shop_customer_of"><?php _e( "Sub partner van", "ascension-shop" ); ?></label>

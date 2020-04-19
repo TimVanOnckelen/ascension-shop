@@ -43,6 +43,8 @@ return array(
     'AscensionShop\\Woocommerce\\MyOrders' => $baseDir . '/src/Woocommerce/MyOrders.php',
     'AscensionShop\\Woocommerce\\Optimalizations' => $baseDir . '/src/Woocommerce/Optimalizations.php',
     'AscensionShop\\Woocommerce\\OrderHooks' => $baseDir . '/src/Woocommerce/OrderHooks.php',
+    'AscensionShop\\Woocommerce\\mails\\OrderMadeForClient' => $baseDir . '/src/Woocommerce/mails/OrderMadeForClient.php',
+    'AscensionShop\\Woocommerce\\mails\\OrderMadeForClientWithPay' => $baseDir . '/src/Woocommerce/mails/OrderMadeForClientWithPay.php',
     'AscensionShop\\Woocommerce\\mails\\PaymentReminderEmail' => $baseDir . '/src/Woocommerce/mails/PaymentReminderEmail.php',
     'Complex\\Complex' => $vendorDir . '/markbaker/complex/classes/src/Complex.php',
     'Complex\\Exception' => $vendorDir . '/markbaker/complex/classes/src/Exception.php',

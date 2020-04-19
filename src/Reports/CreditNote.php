@@ -25,7 +25,7 @@ class CreditNote {
 	private $date_to;
 	private $template = '';
 	private $settings = '';
-	private $ref_status = array("paid","unpaid");
+	private $ref_status = array( "paid", "unpaid" ); // ,"rejected"
 
 	/**
 	 * Document slug.
@@ -33,9 +33,9 @@ class CreditNote {
 	 */
 	public $slug;
 
-	public function __construct($from=null,$to=null,$partner_id=null) {
+	public function __construct( $from = null, $to = null, $partner_id = null ) {
 		$this->partner_id = $partner_id;
-		$this->date_from = $from;
+		$this->date_from  = $from;
 		$this->date_to = $to;
 
 		$this->settings = $this->get_settings();
@@ -97,6 +97,7 @@ class CreditNote {
 
 		return $t->display("reports/pdf/credit-note-affiliate.php");
 	}
+
 	private function getCommissions(){
 
 		// Check if we need to get paid or unpaid items from this creditnote
@@ -114,16 +115,39 @@ class CreditNote {
 			)
 		);
 
-		foreach ($referrals as $id => $ref){
-			$date_paid = get_post_meta($ref->reference,"_paid_date",true);
-			$date_paid = strtotime($date_paid);
-			$end_date = strtotime($this->date_to.' 23:59');
-			$start_date = strtotime($this->date_from.' 00:00');
+		foreach ($referrals as $id => $ref) {
+			$date_paid = get_post_meta( $ref->reference, "_paid_date", true );
+			$order     = wc_get_order( $ref->reference );
 
-			if($date_paid <= $end_date && $date_paid >= $start_date){
+			// Order does not exists anymore :)
+			if ( is_bool( $order ) ) {
+				unset( $referrals[ $id ] );
 				continue;
-			}else{// Unset refrence
-				unset($referrals[$id]);
+			}
+
+			// check rejected refs on refunds
+			if ( $ref->status === "rejected" ) {
+				// Check if order is refunded
+				$refunddata = $order->get_refunds();
+				if ( isset( $refunddata[0] ) ) {
+					$date_paid                = $refunddata[0]->get_date_created()->format( 'd-m-Y' );
+					$referrals[ $id ]->amount = - $ref->amount;
+					$referrals[ $id ]->status = "refund";
+					error_log( $date_paid );
+				} else { // Unset ref is not refund
+					unset( $referrals[ $id ] );
+					continue;
+				}
+			}
+
+			$date_paid  = strtotime( $date_paid );
+			$end_date   = strtotime( $this->date_to . ' 23:59' );
+			$start_date = strtotime( $this->date_from . ' 00:00' );
+
+			if ( $date_paid <= $end_date && $date_paid >= $start_date ) {
+				continue;
+			} else {// Unset refrence
+				unset( $referrals[ $id ] );
 			}
 
 		}

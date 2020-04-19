@@ -378,23 +378,31 @@ $totals = Helpers::getTotalsFromRefs($this->refferals);
         <td><?php echo affwp_currency_filter( affwp_format_amount($totals["total"])); ?></td>
     </tr>
     <?php
-    if($totals["paid"] > 0){
-        ?>
+    if ( $totals["paid"] > 0 ) {
+	    ?>
         <tr>
-            <td><?php _e("Reeds uitbetaald","acension-shop"); ?> <?php echo ' '.$this->date_from. ' - '.$this->date_to; ?></td>
-            <td> - <?php echo affwp_currency_filter( affwp_format_amount($totals["paid"])); ?></td>
+            <td><?php _e( "Reeds uitbetaald", "acension-shop" ); ?><?php echo ' ' . $this->date_from . ' - ' . $this->date_to; ?></td>
+            <td> - <?php echo affwp_currency_filter( affwp_format_amount( $totals["paid"] ) ); ?></td>
         </tr>
-    <?php
+	    <?php
+    }
+    if ( $totals["refund"] > 0 ) {
+	    ?>
+        <tr>
+            <td><?php _e( "Bestelling terugbetaald", "acension-shop" ); ?><?php echo ' ' . $this->date_from . ' - ' . $this->date_to; ?></td>
+            <td> - <?php echo affwp_currency_filter( affwp_format_amount( $totals["refund"] ) ); ?></td>
+        </tr>
+	    <?php
     }
     ?>
     <tr>
-        <td style="text-align: right;"><b><?php _e("Creditfactuur","acension-shop"); ?></b></td>
-        <td><?php echo affwp_currency_filter( affwp_format_amount($totals["unpaid"])); ?></td>
+        <td style="text-align: right;"><b><?php _e( "Creditfactuur", "acension-shop" ); ?></b></td>
+        <td><?php echo affwp_currency_filter( affwp_format_amount( $totals["unpaid"] ) ); ?></td>
     </tr>
     </tbody>
 </table>
 
-<hr />
+<hr/>
 <div class="clean" style="page-break-after:always;">
 	<p>
 		<?php echo nl2br(trim($this->settings["shop_address"][ICL_LANGUAGE_CODE])); ?>
@@ -488,16 +496,18 @@ $totals = Helpers::getTotalsFromRefs($this->refferals);
     </thead>
     <tbody>
 	<?php
+	$total_exvat   = 0;
+	$total_invat   = 0;
 
-    if ( $this->refferals ) :
+	if ( $this->refferals ) :
 
 		$old_parent = "";
-	    $sub = new SubAffiliate($this->partner_id);
+		$sub       = new SubAffiliate( $this->partner_id );
 
-		foreach ( $this->refferals  as $referral ) :
+		foreach ( $this->refferals as $referral ) :
 
 			$order_id = $referral->reference;
-			$order = new \WC_Order($order_id);
+			$order = new \WC_Order( $order_id );
 			$user = $order->get_user();
 
 			// Get percentage
@@ -538,16 +548,30 @@ $totals = Helpers::getTotalsFromRefs($this->refferals);
 					<?php echo $percentage; ?>
 
                 </td>
-                <td class="referral-date" data-th="<?php _e( 'Date', 'affiliate-wp' ); ?>"><?php echo esc_html( $referral->date_i18n( 'datetime' ) ); ?></td>
-                <td><?php echo date('d F Y H:i',strtotime(get_post_meta($referral->reference,"_paid_date",true))); ?></td>
-				<?php
-				/**
-				 * Fires within the table data of the dashboard referrals template.
-				 *
-				 * @param \AffWP\Referral $referral Referral object.
-				 */
-				do_action( 'affwp_referrals_dashboard_td', $referral ); ?>
-                <td class="referral-amount" data-th="<?php _e( 'Commission', 'affiliate-wp' ); ?>"><?php echo affwp_currency_filter( affwp_format_amount( $referral->amount ) ); ?></td>
+                <td class="referral-date"
+                    data-th="<?php _e( 'Date', 'affiliate-wp' ); ?>"><?php echo esc_html( $referral->date_i18n( 'datetime' ) ); ?></td>
+                <td><?php echo date( 'd F Y H:i', strtotime( get_post_meta( $referral->reference, "_paid_date", true ) ) ); ?></td>
+	            <?php
+	            /**
+	             * Fires within the table data of the dashboard referrals template.
+	             *
+	             * @param \AffWP\Referral $referral Referral object.
+	             */
+	            $status = "";
+	            if ( $referral->status === "refund" ) {
+		            $status = "[" . __( "Terugbetaald", "ascension-shop" ) . "]";
+	            }
+	            // calculate amounts in & ex vat
+	            $amounts_ex = Helpers::calculateExIncVat( $referral ); ?>
+
+                <td><?php echo affwp_currency_filter( affwp_format_amount( $amounts_ex["ex"] ) ); ?></td>
+                <td><?php echo affwp_currency_filter( affwp_format_amount( $amounts_ex["in"] ) ); ?></td>
+                <td class="referral-amount"
+                    data-th="<?php _e( 'Commission', 'affiliate-wp' ); ?>"><?php echo affwp_currency_filter( affwp_format_amount( $referral->amount ) ) . ' ' . $status; ?></td>
+	            <?php
+	            $total_exvat += $amounts_ex["ex"];
+	            $total_invat += $amounts_ex["in"];
+	            ?>
 
             </tr>
 		<?php endforeach; ?>
@@ -559,7 +583,16 @@ $totals = Helpers::getTotalsFromRefs($this->refferals);
         </tr>
 
 	<?php endif; ?>
-    <tr><td><b><?php _e("Totaal","ascension-shop"); ?></b></td><td></td><td></td><td></td><td></td><td></td><td></td><td><?php echo affwp_currency_filter( affwp_format_amount($totals["total"])); ?></td></tr>
+    <tr>
+        <td><b><?php _e( "Totaal", "ascension-shop" ); ?></b></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td><?php echo affwp_currency_filter( affwp_format_amount( $total_exvat ) ); ?></td>
+        <td><?php echo affwp_currency_filter( affwp_format_amount( $total_invat ) ); ?></td>
+        <td><?php echo affwp_currency_filter( affwp_format_amount( $totals["total"] ) ); ?></td>
+    </tr>
     </tbody>
 </table>
 </table>

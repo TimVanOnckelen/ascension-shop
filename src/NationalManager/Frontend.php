@@ -102,27 +102,31 @@ class Frontend {
 
 			global $wp;
 
-			// Enqueu scripts
-			wp_enqueue_script("dataTables","//cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js","jquery");
-			wp_enqueue_style("dataTables","//cdn.datatables.net/1.10.20/css/jquery.dataTables.min.css");
-			wp_enqueue_script("sweetAlert","https://cdn.jsdelivr.net/npm/sweetalert2@8");
-			wp_enqueue_script('jquerymodal','https://cdnjs.cloudflare.com/ajax/libs/jquery-modal/0.9.1/jquery.modal.min.js');
-			wp_enqueue_style('jquerymodal','https://cdnjs.cloudflare.com/ajax/libs/jquery-modal/0.9.1/jquery.modal.min.css');
-			wp_enqueue_style("ascension-info-css", XE_ASCENSION_SHOP_PLUGIN_DIR . "/assets/css/refferal-order-info.min.css",null,"1.0.1.7");
-			wp_enqueue_style("national-manager",XE_ASCENSION_SHOP_PLUGIN_DIR."/assets/css/national-manager.min.css",null,"1.0.12");
-			wp_deregister_script("select2");
-			wp_enqueue_script("select2","https://cdn.jsdelivr.net/npm/select2@4.0.12/dist/js/select2.min.js","jquery","1.0.1");
-			wp_enqueue_script("partnerAreaFunctions",XE_ASCENSION_SHOP_PLUGIN_DIR . "/assets/js/partnerAreaFunctions.min.js",array("jquery","sweetAlert","select2"),'1.2.3');
+		// Enqueu scripts
+		wp_enqueue_script( "dataTables", "//cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js", "jquery" );
+		wp_enqueue_style( "dataTables", "//cdn.datatables.net/1.10.20/css/jquery.dataTables.min.css" );
+		wp_enqueue_script( "sweetAlert", "https://cdn.jsdelivr.net/npm/sweetalert2@8" );
+		wp_enqueue_script( 'jquerymodal', 'https://cdnjs.cloudflare.com/ajax/libs/jquery-modal/0.9.1/jquery.modal.min.js' );
+		wp_enqueue_style( 'jquerymodal', 'https://cdnjs.cloudflare.com/ajax/libs/jquery-modal/0.9.1/jquery.modal.min.css' );
+		wp_enqueue_style( "ascension-info-css", XE_ASCENSION_SHOP_PLUGIN_DIR . "/assets/css/refferal-order-info.min.css", null, "1.0.1.7" );
+		wp_enqueue_style( "national-manager", XE_ASCENSION_SHOP_PLUGIN_DIR . "/assets/css/national-manager.min.css", null, "1.0.12" );
+		wp_deregister_script( "select2" );
+		wp_enqueue_script( "select2", "https://cdn.jsdelivr.net/npm/select2@4.0.12/dist/js/select2.min.js", "jquery", "1.0.1" );
+		wp_enqueue_script( "partnerAreaFunctions", XE_ASCENSION_SHOP_PLUGIN_DIR . "/assets/js/partnerAreaFunctions.min.js", array(
+			"jquery",
+			"sweetAlert",
+			"select2"
+		), '1.2.4' );
 
-			// Add vars to script
-			wp_localize_script( 'partnerAreaFunctions', 'partnerArea', array(
-				'url'           => get_rest_url(null,"ascension-shop/v1/clients/all"),
-				'nonce'          => wp_create_nonce( 'wp_rest' ),
-				'editText'      => __("Bewerken","ascension-shop"),
-				'savingText'    => __("Aan het opslaan...","ascension-shop"),
-				'successTextPartner' => __("Partner succesvol aangepast!","ascension-shop"),
-				'successText'    => __("Gebruiker succesvol aangepast!","ascension-shop"),
-				"succesTextDiscount" => __("Korting succesvol aangepast!","ascension-shop"),
+		// Add vars to script
+		wp_localize_script( 'partnerAreaFunctions', 'partnerArea', array(
+			'url'                  => get_rest_url( null, "ascension-shop/v1/clients/all" ),
+			'nonce'                => wp_create_nonce( 'wp_rest' ),
+			'editText'             => __( "Bewerken", "ascension-shop" ),
+			'savingText'           => __( "Aan het opslaan...", "ascension-shop" ),
+			'successTextPartner'   => __( "Partner succesvol aangepast!", "ascension-shop" ),
+			'successText'          => __( "Gebruiker succesvol aangepast!", "ascension-shop" ),
+			"succesTextDiscount"   => __( "Korting succesvol aangepast!", "ascension-shop" ),
 				"successTextTitle" => __("Aanpassen gelukt!","ascension-shop"),
 				'referer'       => home_url( $wp->request ),
 				'tableId'       => "#all-clients",
@@ -212,22 +216,30 @@ class Frontend {
 
 			case "orders";
 				// Get clients template
-				$t = new TemplateEngine();
-				$t->lang = NationalManager::getNationalMangerLang(get_current_user_id());
-				$main->content = $t->display('national-manager/all-orders.php');
+				$t             = new TemplateEngine();
+				$t->lang       = NationalManager::getNationalMangerLang( get_current_user_id() );
+				$main->content = $t->display( 'national-manager/all-orders.php' );
 				break;
 
 			case "clients";
 				// Get clients template
-				$t = new TemplateEngine();
-				$t->lang = NationalManager::getNationalMangerLang(get_current_user_id());
-				$main->content = $t->display('national-manager/all-clients.php');
+				$t             = new TemplateEngine();
+				$t->lang       = NationalManager::getNationalMangerLang( get_current_user_id() );
+				$main->content = $t->display( 'national-manager/all-clients.php' );
 				break;
+
+			case "add-client";
+				// Get clients template
+				$t             = new TemplateEngine();
+				$t->lang       = NationalManager::getNationalMangerLang( get_current_user_id() );
+				$main->content = $t->display( 'national-manager/add-client-form.php' );
+				break;
+
 			case "partners";
 				// Get partners template
-				$t = new TemplateEngine();
-				$t->lang = NationalManager::getNationalMangerLang(get_current_user_id());
-				$main->content = $t->display('national-manager/all-partners.php');
+				$t             = new TemplateEngine();
+				$t->lang       = NationalManager::getNationalMangerLang( get_current_user_id() );
+				$main->content = $t->display( 'national-manager/all-partners.php' );
 
 				break;
 
@@ -398,21 +410,28 @@ class Frontend {
 		$returndata["recordsFiltered"] = $orders->total;
 		$returndata["data"] = array();
 
+		foreach ($orders->orders as $o) {
 
-		foreach ($orders->orders as $o){
+			$temp                 = array();
+			$temp["id"]           = '#' . $o->get_id();
+			$temp["date"]         = $o->get_date_created()->format( 'd-m-Y' );
+			$temp["status"]       = wc_get_order_status_name( $o->get_status() );
+			$temp["amount"]       = $o->get_formatted_order_total();
+			$temp["trackingcode"] = $o->get_meta( 'as_trackingcode' );
 
-			$temp = array();
-			$temp["id"] = '#'.$o->get_id();
-			$temp["date"] = $o->get_date_created()->format ('d-m-Y');
-			$temp["status"] = wc_get_order_status_name($o->get_status());
-			$temp["amount"] = $o->get_formatted_order_total();
-				$user_data = get_userdata( $o->get_customer_id() );
-			$temp["client"] = '<a  target="_blank" href="?tab=orders&id='.$user_data->ID.'">#'.$user_data->ID.' '.$user_data->first_name. ' '.$user_data->last_name.'</a>';
+			$complete_date = $o->get_date_completed();
+			if ( $complete_date != null ) {
+				$complete_date = $complete_date->format( 'd-m-Y' );
+			}
+			$temp["shippingdate"] = $complete_date;
+
+			$user_data      = get_userdata( $o->get_customer_id() );
+			$temp["client"] = '<a  target="_blank" href="?tab=orders&id=' . $user_data->ID . '">#' . $user_data->ID . ' ' . $user_data->first_name . ' ' . $user_data->last_name . '</a>';
 			// Customer of
-			$customer_id = Helpers::getCustomerByUserId($o->get_customer_id());
-			if($customer_id > 0 && $customer_id != '') {
-				$parent = Helpers::getParentByCustomerId($customer_id);
-				if($parent > 0) {
+			$customer_id = Helpers::getCustomerByUserId( $o->get_customer_id() );
+			if ( $customer_id > 0 && $customer_id != '' ) {
+				$parent = Helpers::getParentByCustomerId( $customer_id );
+				if ( $parent > 0 ) {
 					$username = affwp_get_affiliate_name( $parent );
 					$parent   = "#" . $parent . " " . $username;
 				}else{
@@ -436,21 +455,22 @@ class Frontend {
 			$temp["actions"] = '';
 
 			$document = wcpdf_get_document( "invoice", $o->get_id() );
-			$exists = method_exists($document, 'exists') ? $document->exists() : false;
+			$exists   = method_exists( $document, 'exists' ) ? $document->exists() : false;
 
 			// Add if exsists
-			if($exists != false) {
+			if ( $exists != false ) {
 				$temp["actions"] .= '<a target="_blank" href="' . wp_nonce_url( admin_url( 'admin-ajax.php?action=generate_wpo_wcpdf&document_type=invoice&order_ids=' . $o->get_id() . '&my-account' ), 'generate_wpo_wcpdf' ) . '"><button>' . __( "Download factuur", "ascension-shop" ) . '</button></a>';
 			}
 
 			ob_start();
-			do_action( 'woocommerce_view_order', $o->get_id() );
+			woocommerce_order_details_table( $o->get_id() );
 			$order_view = ob_get_contents();
-			ob_get_clean();
+			ob_end_clean();
+
 
 			// View order link
-			$temp["actions"] .= ' <a href="#viewOrder'.$o->get_id().'" rel="modal:open"><button>'.__("Bekijk","ascension-shop").'</button></a>';
-			$temp["actions"] .= '<div class="modal" id="viewOrder'.$o->get_id().'">'.$order_view.'</div>';
+			$temp["actions"]      .= ' <a href="#viewOrder' . $o->get_id() . '" rel="modal:open"><button>' . __( "Bekijk", "ascension-shop" ) . '</button></a>';
+			$temp["actions"]      .= '<div class="modal" id="viewOrder' . $o->get_id() . '">' . $order_view . '</div>';
 			$returndata["data"][] = $temp;
 
 		}
@@ -673,26 +693,27 @@ class Frontend {
 		// If a partner is selected, add users
 		$include = self::loadClientsFromGivenPartner($partner,$all_clients,$loadInactive,$everyone);
 
-		if($allow_partners === false) {
+		if ( $allow_partners === false ) {
 			// Exclude all partners
 			$exclude = self::getPartnersUserIds();
-		}else{ // Allow partners
+		} else { // Allow partners
 			$exclude = array();
 		}
 
 		// Set caching name
-		$caching_name = 'ascension__'.md5(serialize($include).'_'.serialize($exclude).$amount.$start);
+		$caching_name = 'ascension__' . md5( serialize( $include ) . '_' . serialize( $exclude ) . $amount . $start );
 		// Get caching value
-		$cache_result = wp_cache_get( $caching_name );
+		// $cache_result = wp_cache_get( $caching_name );
+		$cache_result = false;
 
-		if($status == "non-active"){
+		if ( $status == "non-active" ) {
 			$meta_q = array(
 				array(
-					'key'     => 'ascension_status',
-					'value'   => 'non-active',
+					'key'   => 'ascension_status',
+					'value' => 'non-active',
 				)
 			);
-		}elseif($status == "active"){
+		} elseif ( $status == "active" ) {
 			$meta_q = array(
 				'relation' => "OR",
 				array(
@@ -743,24 +764,24 @@ class Frontend {
 	public function clientSelectListRest($request){
 
 		// Get partner id
-		$partner = affwp_get_affiliate_id();
+		$partner  = affwp_get_affiliate_id();
 		$everyone = true;
-		$referer = $request->get_header('referer');
+		$referer  = $request->get_header( 'referer' );
 
 		// National manager clients
-		if(NationalManager::isNationalManger(get_current_user_id())  && strpos($referer, 'affiliate-area') === false){
-			$partner = NationalManager::getNationalManagerCountryAff(get_current_user_id());
+		if ( NationalManager::isNationalManger( get_current_user_id() ) && strpos( $referer, 'affiliate-area' ) === false ) {
+			$partner = NationalManager::getNationalManagerCountryAff( get_current_user_id() );
 		}
 
-		$users = self::loadClientQuery($partner,true, false,100, 0, $request["search"], false, $everyone);
+		$users = self::loadClientQuery( $partner, true, false, 100, 0, $request["search"], true, $everyone );
 
 		// The return data
 		$users = $users->get_results();
 
-		$returndata = array();
+		$returndata          = array();
 		$returndata["items"] = array();
 
-		if(count($users) > 0) {
+		if ( count( $users ) > 0 ) {
 			// Create a select list
 			foreach ( $users as $u ) {
 				$name      = get_user_meta( $u, "first_name", true );

@@ -12,7 +12,10 @@
     <option value=""></option>
 <?php
 	foreach ($this->customers as $c){
-		echo '<option value="'.$c->customer_id.'">'.$c->first_name.' '.$c->last_name.'</option>';
+		$userdata = get_userdata( $c->user_id );
+		if ( $userdata->first_name != '' and $userdata->last_name != '' ) {
+			echo '<option value="' . $c->customer_id . '">' . $userdata->first_name . ' ' . $userdata->last_name . '</option>';
+		}
 	}
 ?>
 </select>

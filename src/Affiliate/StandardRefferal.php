@@ -32,15 +32,21 @@ class StandardRefferal
         $aff = $this->getStandardLangAffiliate();
 
         // Setup standard affiliate
-        if (!$ref_id > 0 && !is_user_logged_in()) {
-            $this->setSelfRef($aff);
-        } elseif ($ref_id > 0 && is_user_logged_in()) {
-            // Setup the affiliate id
-            $own_aff_id = affwp_get_affiliate_id(get_current_user_id());
+        if ( ! $ref_id > 0 && ! is_user_logged_in() ) {
+	        $this->setSelfRef( $aff );
+        } elseif ( $ref_id > 0 && is_user_logged_in() ) {
+	        // Setup the affiliate id
+	        $own_aff_id = affwp_get_affiliate_id( get_current_user_id() );
 
-            if ($own_aff_id > 0 && $own_aff_id != $ref_id) {
-                $this->setSelfRef($own_aff_id);
-            }
+	        if ( $own_aff_id > 0 && $own_aff_id != $ref_id ) {
+		        $this->setSelfRef( $own_aff_id );
+	        }
+        } else {
+	        $ref = $this->getStandardLangAffiliate();
+
+	        if ( $ref != $ref_id ) {
+		        $this->setSelfRef( $ref );
+	        }
         }
 
         return;

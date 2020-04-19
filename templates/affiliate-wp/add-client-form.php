@@ -25,7 +25,7 @@ if(isset($_GET["m"])){
     <label for="postalcode"><?php _e("Postcode","ascension-shop"); ?></label>
     <input type="text" name="postalcode" id="postalcode" />
     <label for="phone"><?php _e("Telefoon","ascension-shop"); ?></label>
-    <input type="text" name="phone" id="phone" />
+    <input type="text" name="phone" id="phone" required/>
     <label for="country"><?php _e("Land","ascension-shop"); ?></label>
     <select name="country" id="country">
         <option value=""></option>

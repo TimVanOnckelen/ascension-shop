@@ -257,28 +257,30 @@ class AddClients
 		}
 
 		$nonce_verify  = wp_verify_nonce( $_REQUEST['_wpnonce'], 'ascension_edit_partner' . $affiliate_id );
-		$affiliate = new SubAffiliate($_REQUEST["partner_id"]);
+		$affiliate     = new SubAffiliate($_REQUEST["partner_id"]);
 		$is_partner_of = $affiliate->isSubAffiliateOf($_REQUEST["partner_id"]);
-		$sub = new SubAffiliate($_REQUEST["partner_id"]);
-		$user_id = $sub->getUserId();
+		$sub           = new SubAffiliate( $_REQUEST["partner_id"] );
+		$user_id       = $sub->getUserId();
 
 
 		// National manager can mangage anyone :)
-		if(NationalManager::isNationalManger(get_current_user_id()) == true){
+		if ( NationalManager::isNationalManger( get_current_user_id() ) == true ) {
 			$is_partner_of = true;
-			$affiliate_id = 1;
+			$affiliate_id  = 1;
 		}
 
+		$removeclient = true;
 
 
 		if ( $is_partner_of == true ) {
 			if ( $nonce_verify == true && $affiliate_id > 0 ) {
 
 
-				wp_update_user(array(
-					'ID' => $user_id,
+				wp_update_user( array(
+					'ID'         => $user_id,
 					'first_name' => $_REQUEST["name"],
-					'last_name' => $_REQUEST["lastname"]));
+					'last_name'  => $_REQUEST["lastname"]
+				) );
 
 				update_user_meta($user_id,"billing_first_name",$_REQUEST["name"]);
 				update_user_meta($user_id,"billing_last_name",$_REQUEST["lastname"]);
@@ -297,31 +299,62 @@ class AddClients
 
 					global $wpdb;
 
-					// Update the rate
-					$wpdb->update("{$wpdb->prefix}affiliate_wp_affiliates",array("rate" => $_REQUEST["rate"]),array("affiliate_id" => $sub->getId()));
+					if ( $_REQUEST["ascension_status"] == 1 ) {
+						$status = "active";
+					} else {
+						$status       = "inactive";
+						$removeclient = false;
 
-					die(print_r($_REQUEST));
+						$user_info = get_userdata( $user_id );
+
+						$data = array(
+							"first_name"   => $_REQUEST["name"],
+							"last_name"    => $_REQUEST["lastname"],
+							"email"        => $user_info->user_email,
+							"affiliate_id" => $_REQUEST["ascension_shop_customer_of"],
+							"user_id"      => $user_id
+						);
+
+						if ( $customer_id ) {
+							// Remove as client!
+							global $wpdb;
+							$query = $wpdb->insert( "{$wpdb->prefix}affiliate_wp_customermeta", array( "meta_key"          => "affiliate_id",
+							                                                                           "meta_value"        => $_REQUEST["ascension_shop_customer_of"],
+							                                                                           "affwp_customer_id" => $customer_id
+							) );
+						}
+						// Set user role
+						affwp_add_customer( $data );
+
+					}
+
+					// Update the rate
+					$wpdb->update( "{$wpdb->prefix}affiliate_wp_affiliates", array( "rate"   => $_REQUEST["rate"],
+					                                                                "status" => $status
+					), array( "affiliate_id" => $sub->getId() ) );
+
 
 					// Save parent
-					if($_REQUEST["ascension_shop_customer_of"] != $_REQUEST["partner_id"]) {
-						if($_REQUEST["ascension_shop_customer_of"] != $sub->getParentId()) {
+					if ( $_REQUEST["ascension_shop_customer_of"] != $_REQUEST["partner_id"] ) {
+						if ( $_REQUEST["ascension_shop_customer_of"] != $sub->getParentId() ) {
 							$sub->saveParent( $_REQUEST["ascension_shop_customer_of"] );
 						}
 					}
 
 
-
 				}
 
-				affwp_update_customer(array(
+				affwp_update_customer( array(
 					"customer_id" => $customer_id,
-					"first_name" => $_POST["name"],
-					"last_name" => $_POST["lastname"],
-				));
+					"first_name"  => $_POST["name"],
+					"last_name"   => $_POST["lastname"],
+				) );
 
-				// Remove as client!
-				global $wpdb;
-				$query = $wpdb->query( "DELETE FROM {$wpdb->prefix}affiliate_wp_customermeta WHERE affwp_customer_id='" . $customer_id . "'" );
+				if ( $removeclient === true ) {
+					// Remove as client!
+					global $wpdb;
+					$query = $wpdb->query( "DELETE FROM {$wpdb->prefix}affiliate_wp_customermeta WHERE affwp_customer_id='" . $customer_id . "'" );
+				}
 
 			}else{
 				die("Not a valid nonce");

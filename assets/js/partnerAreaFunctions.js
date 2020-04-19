@@ -110,8 +110,10 @@
                     {"data": "client"},
                     {"data": "partner"},
                     {"data": "status"},
-                    {"data" : "amount"},
-                    {"data" : "actions"},
+                    {"data": "shippingdate"},
+                    {"data": "trackingcode"},
+                    {"data": "amount"},
+                    {"data": "actions"},
                 ],
             }
 

@@ -206,27 +206,34 @@ class Helpers
     }
 
     static function getTotalsFromRefs($refs){
-    	$totals = array();
-    	$totals["total"] = 0;
-    	$totals["pending"] = 0;
-    	$totals["unpaid"] = 0;
-    	$totals["paid"] = 0;
+	    $totals            = array();
+	    $totals["total"]   = 0;
+	    $totals["pending"] = 0;
+	    $totals["unpaid"]  = 0;
+	    $totals["paid"]    = 0;
+	    $totals["refund"]  = 0;
 
-    	foreach($refs as $ref){
-    		$totals["total"] += $ref->amount;
+	    foreach ( $refs as $ref ) {
+		    $totals["total"] += $ref->amount;
 
-    		if($ref->status == 'unpaid'){
-    			$totals["unpaid"] += $ref->amount;
+		    if ( $ref->status == 'unpaid' ) {
+			    $totals["unpaid"] += $ref->amount;
 		    }
-		    if($ref->status == 'pending'){
+		    if ( $ref->status == 'pending' ) {
 			    $totals["pending"] += $ref->amount;
 		    }
-		    if($ref->status == 'paid'){
+		    if ( $ref->status == 'paid' ) {
 			    $totals["paid"] += $ref->amount;
+		    }
+		    if ( $ref->status == 'refund' ) {
+			    $totals["refund"] -= $ref->amount;
+			    $totals["total"]  -= $ref->amount; // Make total clean
+			    $totals["unpaid"] += $ref->amount;
 		    }
 	    }
 
-    	return $totals;
+
+	    return $totals;
     }
 
 	/**
@@ -243,52 +250,70 @@ class Helpers
 		    $parent = affiliate_wp()->affiliates->get_affiliate_name( $referral->custom["parent"] );
 	    }elseif(strpos($referral->description, 'Indirect') !== false){
 		    // Legacy support for orders before v1.0.5
-		    $temp_parent = str_replace('Indirect Referral FROM','',$referral->description);
-		    $temp_parent = explode("|",$temp_parent);
-		    $parent = $temp_parent[0];
+		    $temp_parent = str_replace( 'Indirect Referral FROM', '', $referral->description );
+		    $temp_parent = explode( "|", $temp_parent );
+		    $parent      = $temp_parent[0];
 	    }
 
 	    return $parent;
     }
 
 
-    static function getPercentageTable($sub,$order,$referral){
-	    /**
-	     * Get the rates
-	     */
-	    $user_rate = $sub->getUserRate();
-	    $min = '';
-	    $return_rate = $user_rate;
-	    $total = round($order->get_subtotal() - $order->get_discount_total(),2);
-	    $amount = $referral->amount;
-	    $amount_check =  $user_rate * ( $total / 100 );
-		$extra = '';
+	/**
+	 * @param $sub
+	 * @param $order
+	 * @param $referral
+	 *
+	 * @return string
+	 */
+	static function getPercentageTable( $sub, $order, $referral ) {
+		/**
+		 * Get the rates
+		 */
+		$user_rate   = $sub->getUserRate();
+		$min         = '';
+		$return_rate = $user_rate;
+		$extra_vat   = 0;
+		$country     = $order->get_shipping_country();
 
-	    if(user_can(get_current_user_id(),"administrator")){
-	    	// $extra = 'ONLY TESTING - ONLY ADMINS SEE THIS Total:'.$total.' Amount:'.$amount . ' amount-check:'.$amount_check. ' ORDER ID ';
-	    }
+		// Add VAT on CY when tax number is set
+		if ( $country === "CY" ) {
 
-	    /**
-	     * Check if there is a new rate
-	     */
-	    if ( $amount_check != $amount ) {
-		    $min            = $amount_check - $amount;
-		    $min_percentage = round( 100 * ( $min / $total ), 0 );
 
-		    if ( $min_percentage > $user_rate ) {
-			    $min_percentage = $user_rate;
-		    }elseif($min_percentage < 0){
-		    	$min_percentage = 0;
+		}
 
-		    }
+		$total = round( $order->get_subtotal() - $order->get_discount_total() + $extra_vat, 2 );
 
-		    $min      = ' - ' . $min_percentage . '%';
-		    $new_rate = $user_rate - $min_percentage;
-		    $min      .= ' = ' . $new_rate . '%';
-	    }
+		$amount       = $referral->amount;
+		$amount_check = $user_rate * ( $total / 100 );
+		$extra        = '';
 
-	    return  $user_rate . '%' . $min.$extra;
-    }
+		if ( user_can( get_current_user_id(), "administrator" ) ) {
+			// $extra = 'ONLY TESTING - ONLY ADMINS SEE THIS Total:'.$total.' Amount:'.$amount . ' amount-check:'.$amount_check. ' ORDER ID ';
+		}
+
+		/**
+		 * Check if there is a new rate
+		 */
+		// if ( $amount_check != $amount ) {
+		$min            = $amount_check - $amount;
+		$min_percentage = round( 100 * ( $min / $total ), 0 );
+
+		if ( $min_percentage > $user_rate ) {
+			$min_percentage = $user_rate;
+		} elseif ( $min_percentage < 0 ) {
+			$min_percentage = 0;
+
+		}
+
+		$min      = ' - ' . $min_percentage . '%';
+		$new_rate = $user_rate - $min_percentage;
+		$min      .= ' = ' . $new_rate . '%';
+
+		// }
+
+		return $user_rate . '%' . $min . $extra;
+	}
 
 	/**
 	 * Make payout array per affiliate
@@ -475,13 +500,53 @@ class Helpers
 	public static function getParentByCustomerId($customer_id)
 	{
 		global $wpdb;
-		$query = $wpdb->get_row("SELECT meta_value FROM {$wpdb->prefix}affiliate_wp_customermeta WHERE affwp_customer_id='" . $customer_id . "' AND meta_key='affiliate_id'");
+		$query = $wpdb->get_row( "SELECT meta_value FROM {$wpdb->prefix}affiliate_wp_customermeta WHERE affwp_customer_id='" . $customer_id . "' AND meta_key='affiliate_id'" );
 
-		if (isset($query->meta_value)) {
+		if ( isset( $query->meta_value ) ) {
 			return $query->meta_value;
 		}
+
 		return 0;
 	}
 
+
+	/**
+	 * Calculate amounts without & with vat
+	 *
+	 * @param $ref
+	 *
+	 * @return array
+	 *
+	 */
+	public static function calculateExIncVat( $ref ) {
+		$order_id      = $ref->reference;
+		$order         = new \WC_Order( $order_id );
+		$user          = $order->get_user();
+		$fee_total     = 0;
+		$fee_total_tax = 0;
+
+		// Iterating through order fee items ONLY
+		foreach ( $order->get_items( 'fee' ) as $item_id => $item_fee ) {
+
+			// The fee total amount
+			$fee_total += $item_fee->get_total();
+
+			// The fee total tax amount
+			$fee_total_tax += $item_fee->get_total_tax();
+
+		}
+
+		// Fix issue on zero vat
+		if ( $order->get_total_tax() <= 0 ) {
+			$fee_total     = 0;
+			$fee_total_tax = 0;
+		}
+
+		$return       = array();
+		$return["ex"] = $order->get_total() - $fee_total - $fee_total_tax;
+		$return["in"] = $order->get_total() - $order->get_total_tax() - $fee_total;
+
+		return $return;
+	}
 
 }

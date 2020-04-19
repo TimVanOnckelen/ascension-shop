@@ -53,6 +53,7 @@ if(!isset($_GET["start-date"])){
 
     $ref_totals = Helpers::countPerRef($referrals,$_GET["end-date"],$_GET["start-date"]);
 
+
     foreach ($ref_totals as $ref){
         ?>
         <tr><td><?php echo $ref["affiliate_id"];?></td>

@@ -71,43 +71,45 @@ class FrontendDashboard
 	    }
 
 	    // Fix issue on zero vat
-	    if($order->get_total_tax() <= 0){
-	        $fee_total = 0;
-	        $fee_total_tax = 0;
-        }
+	    if ( $order->get_total_tax() <= 0 ) {
+		    $fee_total = 0;
+		    $fee_total_tax = 0;
+	    }
 
 
-        ?>
-        <td><?php echo affwp_currency_filter( affwp_format_amount( $order->get_total() - $fee_total - $fee_total_tax)); ?></td>
-        <td><?php echo affwp_currency_filter( affwp_format_amount($order->get_total() - $order->get_total_tax() - $fee_total )); ?></td>
-        <?php
+	    ?>
+        <td><?php echo affwp_currency_filter( affwp_format_amount( $order->get_total() - $fee_total - $fee_total_tax ) ); ?></td>
+        <td><?php echo affwp_currency_filter( affwp_format_amount( $order->get_total() - $order->get_total_tax() - $fee_total ) ); ?></td>
+	    <?php
     }
+
 
 
 	/**
 	 * @param $tabs
 	 * @return mixed
 	 */
-	public function addExtraTabs($tabs)
-	{
+	public function addExtraTabs($tabs) {
 
 
 		// enque style
-		wp_enqueue_script("dataTables","//cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js","jquery");
-		wp_enqueue_style("dataTables","//cdn.datatables.net/1.10.20/css/jquery.dataTables.min.css");
-		wp_enqueue_style("ascension-info-css", XE_ASCENSION_SHOP_PLUGIN_DIR . "/assets/css/refferal-order-info.min.css",null,"1.0.1.7");
-		wp_enqueue_script("sweetAlert","https://cdn.jsdelivr.net/npm/sweetalert2@8");
-		wp_enqueue_script("partnerAreaFunctions",XE_ASCENSION_SHOP_PLUGIN_DIR . "/assets/js/partnerAreaFunctions.min.js",array("jquery","sweetAlert"),'1.2.3');
+		wp_enqueue_script( "dataTables", "//cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js", "jquery" );
+		wp_enqueue_style( "dataTables", "//cdn.datatables.net/1.10.20/css/jquery.dataTables.min.css" );
+		wp_enqueue_style( "ascension-info-css", XE_ASCENSION_SHOP_PLUGIN_DIR . "/assets/css/refferal-order-info.min.css", null, "1.0.1.7" );
+		wp_enqueue_script( "sweetAlert", "https://cdn.jsdelivr.net/npm/sweetalert2@8" );
+		wp_enqueue_script( "partnerAreaFunctions", XE_ASCENSION_SHOP_PLUGIN_DIR . "/assets/js/partnerAreaFunctions.min.js", array(
+			"jquery",
+			"sweetAlert"
+		), '1.2.4' );
 
 
-
-		unset($tabs["referrals"]);
-		unset($tabs["lifetime-customers"]);
-		unset($tabs["stats"]);
-		unset($tabs["payouts"]);
-		unset($tabs["creatives"]);
-		unset($tabs["settings"]);
-		unset($tabs["waterfall"]);
+		unset( $tabs["referrals"] );
+		unset( $tabs["lifetime-customers"] );
+		unset( $tabs["stats"] );
+		unset( $tabs["payouts"] );
+		unset( $tabs["creatives"] );
+		unset( $tabs["settings"] );
+		unset( $tabs["waterfall"] );
 		unset($tabs["graphs"]);
 
 		$old_tabs = $tabs;

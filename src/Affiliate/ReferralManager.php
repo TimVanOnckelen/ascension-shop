@@ -127,17 +127,22 @@ class ReferralManager
 
         } else {
 
-            // Parents found
-            // Calculate reference amounts
-            $this->getReferenceTotalAmount($reference, $amount, $sub->getFullParentWaterfall(), $affiliate_id, $sub->getLevel(), $client_fee);
+	        // Parents found
+	        // Calculate reference amounts
+	        $this->getReferenceTotalAmount( $reference, $amount, $sub->getFullParentWaterfall(), $affiliate_id, $sub->getLevel(), $client_fee );
 
-            // Get the amount for current product.
-            $referral_amount = $this->amount_array[$sub->getLevel()];
+	        // Get the amount for current product.
+	        $referral_amount = $this->amount_array[ $sub->getLevel() ];
 
         }
 
 
-        return $referral_amount;
+	    // Amount should not be negative
+	    if ( $referral_amount < 0 ) {
+		    $referral_amount = 0;
+	    }
+
+	    return $referral_amount;
 
     }
 
@@ -308,7 +313,7 @@ class ReferralManager
     private function checkForClientFees($order_id)
     {
 
-        $order = new \WC_Order($order_id);
+	    $order = new \WC_Order($order_id);
 
         if (!is_array($order->get_items('fee'))) {
             return;
