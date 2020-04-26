@@ -16,11 +16,11 @@ class StandardRefferal
 
     public function __construct()
     {
-        add_filter("affwp_tracking_is_valid_affiliate", array($this, "allowOwnAffiliate"), 10, 2);
-        add_action("init", array($this, "setCustomRef"));
-        add_action("admin_menu", array($this, "addSettingsPage"));
-        add_action("admin_post_ascension-save_standard_ref", array($this, "saveStandards"));
-        add_action("init", array($this, "changeStandardRef"));
+        add_filter( "affwp_tracking_is_valid_affiliate", array( $this, "allowOwnAffiliate" ), 10, 2 );
+	    add_action( "wp_loaded", array( $this, "setCustomRef" ) );
+	    add_action( "admin_menu", array( $this, "addSettingsPage" ) );
+	    add_action( "admin_post_ascension-save_standard_ref", array( $this, "saveStandards" ) );
+	    add_action( "wp_loaded", array( $this, "changeStandardRef" ) );
     }
 
     /**
@@ -28,26 +28,28 @@ class StandardRefferal
      */
     public function setCustomRef()
     {
-        $ref_id = affiliate_wp()->tracking->get_affiliate_id();
-        $aff = $this->getStandardLangAffiliate();
+	    $ref_id = $_COOKIE["affwp_ref"];
+	    $aff    = $this->getStandardLangAffiliate();
 
         // Setup standard affiliate
-        if ( ! $ref_id > 0 && ! is_user_logged_in() ) {
-	        $this->setSelfRef( $aff );
-        } elseif ( $ref_id > 0 && is_user_logged_in() ) {
-	        // Setup the affiliate id
-	        $own_aff_id = affwp_get_affiliate_id( get_current_user_id() );
+	    if ( ! isset( $ref_id ) or ! $ref_id > 0 && ! is_user_logged_in() ) {
+		    $this->setSelfRef( $aff );
+	    } elseif ( $ref_id > 0 && is_user_logged_in() ) {
+		    // Setup the affiliate id
+		    $own_aff_id = affwp_get_affiliate_id( get_current_user_id() );
 
-	        if ( $own_aff_id > 0 && $own_aff_id != $ref_id ) {
-		        $this->setSelfRef( $own_aff_id );
-	        }
-        } else {
-	        $ref = $this->getStandardLangAffiliate();
+		    if ( $own_aff_id > 0 && $own_aff_id != $ref_id ) {
+			    $this->setSelfRef( $own_aff_id );
+		    }
+	    } else {
+		    $ref = $this->getStandardLangAffiliate();
 
-	        if ( $ref != $ref_id ) {
-		        $this->setSelfRef( $ref );
-	        }
-        }
+		    if ( $ref != $ref_id && $ref_id > 0 ) {
+			    $this->setSelfRef( $ref_id );
+		    } else {
+			    $this->setSelfRef( $ref );
+		    }
+	    }
 
         return;
 
@@ -62,12 +64,13 @@ class StandardRefferal
         $current_ref = affiliate_wp()->tracking->get_affiliate_id();
 
         if (in_array($current_ref, $this->getArrayOfStandards()) === true) {
-            // Current aff id is a standard, so set the new one based on lang
-            $ref = $this->getStandardLangAffiliate();
+	        // Current aff id is a standard, so set the new one based on lang
+	        // $ref = $this->getStandardLangAffiliate();
+	        $ref = 0;
 
-            if ($ref != $current_ref) {
-                $this->setSelfRef($ref);
-            }
+	        if ( $ref != $current_ref && $current_ref <= 0 ) {
+		        $this->setSelfRef( $ref );
+	        }
         }
 
         return;

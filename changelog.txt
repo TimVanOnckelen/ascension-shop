@@ -1,3 +1,6 @@
+v1.2.3
+**************
+- [fix] Correct list of partners is now loaded when editing client
 V1.2.2
 **************
 - [fix] Bug in paying order for partners

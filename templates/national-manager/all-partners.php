@@ -12,29 +12,36 @@
 	if(NationalManager::isNationalManger(get_current_user_id())){
 
 		// Only get the clients from given country
-		$affiliate_id = NationalManager::getNationalManagerCountryAff(get_current_user_id());
+		$affiliate_id = NationalManager::getNationalManagerCountryAff( get_current_user_id() );
 
-		if(isset($_GET["id"])){
-		    $affiliate_id = $_GET["id"];
-        }
-		if(isset($_GET["allSubs"])){
-		    $all_subs = $_GET["allSubs"];
-        }
+		if ( isset( $_GET["id"] ) ) {
+			$affiliate_id = $_GET["id"];
+		}
+		if ( isset( $_GET["allSubs"] ) ) {
+			$all_subs = $_GET["allSubs"];
+		}
 	}
 
+	if ( isset( $_GET["page"] ) ) {
+		$page = $_GET["page"];
+	} else {
+		$page = 1;
+	}
 
-	$sub          = new SubAffiliate($affiliate_id);
-	$partners     = $sub->getAllChildren(2,true,$all_subs);
-	$partners_amount = count($partners);
+	$startby = ( $page * 20 ) - 20;
 
-	printf(__("Overzicht van alle partners van de %s shop","ascension-shop"),$this->lang[0]); ?>
+	$sub             = new SubAffiliate( $affiliate_id );
+	$partners        = $sub->getAllChildren( 2, true, $all_subs );
+	$partners_amount = count( $partners );
+	$current_partner = 1;
 
+	printf( __( "Overzicht van alle partners van de %s shop", "ascension-shop" ), $this->lang[0] ); ?>
 
 
     <div id="affwp-affiliate-dashboard-lifetime-customers" class="printArea affwp-tab-content">
 
         <p>
-            <b><?php echo __("Aantal partners:","ascension-shop"). ' '.$partners_amount; ?></b>
+            <b><?php echo __( "Aantal partners:", "ascension-shop" ) . ' ' . $partners_amount; ?></b>
         </p>
 
         <div class="partnerArea-header">
@@ -76,8 +83,8 @@
 
                 <tbody>
 				<?php foreach ( $partners as $partner ) :
-                    
-					if ( $partner ): ?>
+
+				if ( $partner ): ?>
 
 
                         <tr>

@@ -3,7 +3,7 @@
 Plugin Name: Ascension Shop
 Plugin URI: https://www.xeweb.be
 Description: Custom woocommerce & Affiliate wp additions plugin for Ascension
-Version: 1.2.2
+Version: 1.2.3
 Author: XeWeb
 Author URI: https://www.xeweb.be
 */

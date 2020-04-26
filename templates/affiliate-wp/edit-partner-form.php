@@ -76,14 +76,14 @@ echo admin_url('admin-post.php'); ?>" style="display: none;" id="edit-user-<?php
 			}
 			?>
         </select>
-        <label for="vat"><?php _e("Commissie","ascension-shop"); ?> %</label>
-        <input type="text" name="rate" id="rate"  value="<?php echo $this->partner->getUserRate(); ?>"  />
+        <label for="vat"><?php _e( "Commissie", "ascension-shop" ); ?> %</label>
+        <input type="text" name="rate" id="rate" value="<?php echo $this->partner->getUserRate(); ?>"/>
 		<?php
 	}
 	?>
-	<?php wp_nonce_field( 'ascension_edit_partner'.$this->affiliate_id ); ?>
+	<?php wp_nonce_field( 'ascension_edit_partner' . affwp_get_affiliate_id( get_current_user_id() ) ); ?>
     <input type="hidden" name="partner_id" value="<?php echo $this->partner->getId(); ?>"/>
     <input type="hidden" name="action" value="ascension-edit_partner">
-	<input type="submit" value="<?php _e("Aanpassen","ascension-shop"); ?>" />
+    <input type="submit" value="<?php _e( "Aanpassen", "ascension-shop" ); ?>"/>
 </form>
 </p>

@@ -46,10 +46,12 @@ echo $this->user->ID; ?>" class="partnerArea-header no-borders">
 	$t = new TemplateEngine();
 	// Make it accessable in template
 	$this->user->user_id = $this->user->ID;
-	$t->customer = $this->user;
-	$t->customer->email = $this->user->user_email;
-	$t->affiliate_id = affwp_get_affiliate_id();
-	echo $t->display("affiliate-wp/edit-client-form.php");
+	$t->customer         = $this->user;
+	$t->customer->email  = $this->user->user_email;
+	$t->affiliate_id     = affwp_get_affiliate_id();
+	$t->partners         = $this->partners;
+	$t->sub              = $this->sub;
+	echo $t->display( "affiliate-wp/edit-client-form.php" );
 
 	?>
 </div>

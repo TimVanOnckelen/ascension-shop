@@ -604,18 +604,27 @@ class Frontend {
 		global $wpdb;
 
 		// Get clients
-		$users = self::loadClientQuery($partner,$all_clients,$allow_partners,$amount,$start,$search,true,$everyone,$status);
+		$users        = self::loadClientQuery( $partner, $all_clients, $allow_partners, $amount, $start, $search, true, $everyone, $status );
 		$users_result = $users->get_results();
 
+
+		if ( NationalManager::isNationalManger( get_current_user_id() ) ) {
+			$affiliate_id = NationalManager::getNationalManagerCountryAff( get_current_user_id() );
+			$sub          = new \AscensionShop\Affiliate\SubAffiliate( $affiliate_id );
+			$partners     = $sub->getAllChildren( 2, true, true );
+		} else {
+			$partners = array();
+		}
+
 		// Setup all data
-		$returndata = array();
-		$returndata["draw"] = $draw++;
-		$returndata["recordsTotal"] = $users->get_total();
+		$returndata                    = array();
+		$returndata["draw"]            = $draw ++;
+		$returndata["recordsTotal"]    = $users->get_total();
 		$returndata["recordsFiltered"] = $users->get_total();
-		$returndata["data"] = array();
+		$returndata["data"]            = array();
 
 		// Get all users
-		foreach ($users_result as $customer){
+		foreach ( $users_result as $customer ) {
 			$temp = array();
 			// Setup data
 			$user_data = get_userdata($customer);
@@ -642,17 +651,19 @@ class Frontend {
 						$sub = new SubAffiliate($aff_id);
 						$parent = $sub->getParentId();
 						$parent = affwp_get_affiliate_name($parent);
-					}else {
+					} else {
 						$parent = "";
 					}
 				}
-			}else{
+			} else {
 				$parent = "";
 			}
 
-			$t->ref = $ref;
+			$t->ref          = $ref;
 			$temp["partner"] = $parent;
-			$temp["info"] = $t->display('national-manager/table/info.php');
+			$t->partners     = $partners;
+			$t->sub          = $sub;
+			$temp["info"]    = $t->display( 'national-manager/table/info.php' );
 
 
 			/*

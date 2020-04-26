@@ -225,11 +225,11 @@ class SubAffiliate
 	 * @return bool
 	 */
 	public function isSubAffiliateOf($sub){
-		$children = $this->getAllChildren();
+		$children = $this->getAllChildren( 2, false, true );
 
-		if(is_array($children)){
-			foreach ($children as $c){
-				if($c->affiliate_id == $sub){
+		if ( is_array( $children ) ) {
+			foreach ( $children as $c ) {
+				if ( $c->affiliate_id == $sub ) {
 					return true;
 				}
 			}

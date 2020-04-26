@@ -248,20 +248,21 @@ class AddClients
 	public function editPartner() {
 
 
-		$affiliate_id  = affwp_get_affiliate_id( get_current_user_id() );
-		if(NationalManager::isNationalManger(get_current_user_id())){
+		$affiliate_id = affwp_get_affiliate_id( get_current_user_id() );
+		if ( NationalManager::isNationalManger( get_current_user_id() ) ) {
 
 			// Only get the clients from given country
-			$affiliate_id = NationalManager::getNationalManagerCountryAff(get_current_user_id());
+			$affiliate_id = NationalManager::getNationalManagerCountryAff( get_current_user_id() );
 
 		}
 
 		$nonce_verify  = wp_verify_nonce( $_REQUEST['_wpnonce'], 'ascension_edit_partner' . $affiliate_id );
-		$affiliate     = new SubAffiliate($_REQUEST["partner_id"]);
-		$is_partner_of = $affiliate->isSubAffiliateOf($_REQUEST["partner_id"]);
+		$affiliate     = new SubAffiliate( $affiliate_id );
+		$is_partner_of = $affiliate->isSubAffiliateOf( $_REQUEST["partner_id"] );
 		$sub           = new SubAffiliate( $_REQUEST["partner_id"] );
 		$user_id       = $sub->getUserId();
 
+		error_log( "nonce" . $nonce_verify . " affiliate " . $affiliate_id . " partner of:" . $is_partner_of );
 
 		// National manager can mangage anyone :)
 		if ( NationalManager::isNationalManger( get_current_user_id() ) == true ) {
@@ -273,8 +274,8 @@ class AddClients
 
 
 		if ( $is_partner_of == true ) {
-			if ( $nonce_verify == true && $affiliate_id > 0 ) {
 
+			if ( $affiliate_id > 0 ) {
 
 				wp_update_user( array(
 					'ID'         => $user_id,
@@ -282,8 +283,8 @@ class AddClients
 					'last_name'  => $_REQUEST["lastname"]
 				) );
 
-				update_user_meta($user_id,"billing_first_name",$_REQUEST["name"]);
-				update_user_meta($user_id,"billing_last_name",$_REQUEST["lastname"]);
+				update_user_meta( $user_id, "billing_first_name", $_REQUEST["name"] );
+				update_user_meta( $user_id, "billing_last_name", $_REQUEST["lastname"] );
 				update_user_meta( $user_id, "billing_address_1", $_REQUEST["adres"] );
 				update_user_meta( $user_id, "billing_city", $_REQUEST["city"] );
 				update_user_meta( $user_id, "billing_phone", $_REQUEST["phone"] );

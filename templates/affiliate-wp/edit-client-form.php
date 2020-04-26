@@ -45,25 +45,24 @@ echo admin_url('admin-post.php'); ?>" id="edit-user-<?php echo $this->customer->
 
     if ( NationalManager::isNationalManger(get_current_user_id()) ) {
 
-	    if ( $customer_id > 0 ) {
-		    $parent_id = Helpers::getParentByCustomerId($customer_id );
-	    }else{
-	        $parent_id = 0;
-        }
 
-	    $all_affiliates = affiliate_wp()->affiliates->get_affiliates( array( 'number'  => 0,
-	                                                                         'orderby' => 'name',
-	                                                                         'order'   => 'ASC'
-	    ) );
+	    if ( $customer_id > 0 ) {
+		    $parent_id = Helpers::getParentByCustomerId( $customer_id );
+	    } else {
+		    $parent_id = 0;
+	    }
+
+
 	    ?>
         <label for="ascension_shop_customer_of"><?php _e( "Klant van", "ascension-shop" ); ?></label>
         <select name="ascension_shop_customer_of">
             <option></option>
+            <option value="<?php echo $this->sub->getId(); ?>" <?php selected( $this->sub->getId(), $parent_id ); ?>><?php echo $this->sub->getName(); ?></option>
 		    <?php
-		    foreach ( $all_affiliates as $a ) {
+		    foreach ( $this->partners as $a ) {
 
 			    ?>
-                <option value="<?php echo $a->affiliate_id; ?>" <?php selected( $a->affiliate_id, $parent_id ); ?>><?php echo affiliate_wp()->affiliates->get_affiliate_name( $a->affiliate_id ) ?></option>
+                <option value="<?php echo $a->getId(); ?>" <?php selected( $a->getId(), $parent_id ); ?>><?php echo $a->getName(); ?></option>
 			    <?php
 
 		    }
